@@ -4,219 +4,320 @@
 {% block content %}
 <div class="max-w-2xl mx-auto">
 
-  <!-- ── Page title ──────────────────────────────────────────────────────── -->
-  <div class="text-center mb-8">
-    <h1 class="text-4xl font-extrabold tracking-tight text-white mb-2">
-      PDF <span class="text-violet-400">→</span> EPUB
+  <!-- ── Hero ─────────────────────────────────────────────────────────────── -->
+  <div class="text-center mb-10">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full
+                bg-violet-500/15 border border-violet-500/30 text-violet-300
+                text-xs font-semibold tracking-wider uppercase mb-4">
+      <span class="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse"></span>
+      Free &amp; open source
+    </div>
+    <h1 class="text-5xl font-black tracking-tight text-white mb-3">
+      PDF <span class="bg-gradient-to-r from-violet-400 to-fuchsia-400
+                       bg-clip-text text-transparent">→</span> EPUB
     </h1>
-    <p class="text-white/40 text-sm">Convert your PDFs into clean, readable ebooks</p>
+    <p class="text-white/65 text-base max-w-sm mx-auto">
+      Turn any PDF into a clean, readable ebook in seconds
+    </p>
   </div>
 
   <!-- ── Tab nav ─────────────────────────────────────────────────────────── -->
-  <div class="flex gap-1 p-1 bg-white/[0.05] rounded-xl mb-6 border border-white/[0.07]">
+  <div class="flex gap-1 p-1 bg-white/[0.06] rounded-2xl mb-6 border border-white/[0.12]">
     <button id="tab-btn-single"
-            class="tab-btn flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150
-                   bg-violet-600 text-white shadow-sm"
+            class="tab-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl
+                   text-sm font-semibold transition-all duration-200
+                   bg-violet-600 text-white shadow-lg shadow-violet-900/40"
             data-tab="single" onclick="switchTab('single')">
-      Individual
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0
+                 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0
+                 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      Single file
     </button>
     <button id="tab-btn-multi"
-            class="tab-btn flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150
-                   text-white/40 hover:text-white/70"
+            class="tab-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl
+                   text-sm font-semibold transition-all duration-200
+                   text-white/65 hover:text-white hover:bg-white/[0.05]"
             data-tab="multi" onclick="switchTab('multi')">
-      Multiple
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0
+                 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5
+                 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+      </svg>
+      Multiple files
     </button>
   </div>
 
   <!-- ════════════════════════════════════════════════════════════════════════
        TAB: INDIVIDUAL
   ═══════════════════════════════════════════════════════════════════════════ -->
-  <div id="tab-single" class="tab-panel">
-    <div class="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6 space-y-5">
+  <div id="tab-single" class="tab-panel space-y-4">
 
-      <!-- Drop zone -->
-      <div>
-        <label id="single-dropzone"
-               class="flex flex-col items-center justify-center gap-3 w-full rounded-xl
-                      border-2 border-dashed border-white/20 cursor-pointer py-10
-                      hover:border-violet-400/50 hover:bg-violet-500/[0.03] transition-all group">
-          <!-- Default state -->
-          <div id="single-state-empty" class="flex flex-col items-center gap-3">
-            <div class="w-14 h-14 rounded-2xl bg-violet-600/15 border border-violet-500/20
-                        flex items-center justify-center group-hover:bg-violet-600/25 transition-colors">
-              <svg class="w-6 h-6 text-violet-400" fill="none" viewBox="0 0 24 24"
-                   stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021
-                         18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
-              </svg>
-            </div>
-            <div class="text-center">
-              <p class="text-white/70 font-semibold text-sm">Drop a PDF here, or click to browse</p>
-              <p class="text-white/30 text-xs mt-1">Max 50 MB · .pdf only</p>
-            </div>
-          </div>
-          <!-- Selected state -->
-          <div id="single-state-selected" class="hidden flex-col items-center gap-2 w-full px-6">
-            <svg class="w-10 h-10 text-violet-400" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0
-                       0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5
-                       3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504
-                       1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
-            </svg>
-            <p id="single-filename" class="text-white font-semibold text-sm text-center truncate max-w-full"></p>
-            <p id="single-fileinfo" class="text-white/40 text-xs"></p>
-            <p class="text-violet-400/70 text-xs">Click to change file</p>
-          </div>
-          <input id="single-input" type="file" accept=".pdf" class="hidden"/>
-        </label>
+    <!-- Drop zone -->
+    <label id="single-dropzone"
+           class="relative flex flex-col items-center justify-center gap-4 w-full rounded-2xl
+                  border-2 border-dashed border-white/20 cursor-pointer py-14 px-6
+                  hover:border-violet-500/60 hover:bg-violet-500/[0.04]
+                  transition-all duration-300 group overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-b from-violet-600/[0.05] to-transparent
+                  opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl pointer-events-none"></div>
+
+      <!-- Empty state -->
+      <div id="single-state-empty" class="flex flex-col items-center gap-4 relative z-10">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600/25 to-fuchsia-600/15
+                    border border-violet-500/30 flex items-center justify-center
+                    group-hover:scale-110 group-hover:from-violet-600/35
+                    transition-all duration-300 shadow-lg shadow-violet-900/30">
+          <svg class="w-7 h-7 text-violet-400" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0
+                     0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+          </svg>
+        </div>
+        <div class="text-center">
+          <p class="text-white/85 font-semibold text-sm">
+            Drop your PDF here
+            <span class="text-white/50 font-normal">&nbsp;or&nbsp;</span>
+            <span class="text-violet-400 font-semibold">click to browse</span>
+          </p>
+          <p class="text-white/50 text-xs mt-1.5">PDF files only &mdash; max 50 MB</p>
+        </div>
       </div>
 
-      <!-- Metadata fields (shown after file selected) -->
-      <div id="single-meta" class="hidden space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-medium text-white/50 mb-1.5">
-              Title <span class="text-white/25 font-normal">(optional)</span>
-            </label>
-            <input id="single-title"
-                   class="w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-2.5
-                          text-sm text-white placeholder-white/20 outline-none
-                          focus:border-violet-400/60 focus:ring-1 focus:ring-violet-400/20
-                          transition-all"
-                   type="text" maxlength="500" placeholder="Auto-detected from PDF"/>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-white/50 mb-1.5">
-              Author <span class="text-white/25 font-normal">(optional)</span>
-            </label>
-            <input id="single-author"
-                   class="w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-2.5
-                          text-sm text-white placeholder-white/20 outline-none
-                          focus:border-violet-400/60 focus:ring-1 focus:ring-violet-400/20
-                          transition-all"
-                   type="text" maxlength="500" placeholder="Auto-detected from PDF"/>
-          </div>
+      <!-- Selected state -->
+      <div id="single-state-selected"
+           class="hidden flex-col items-center gap-3 w-full px-4 relative z-10">
+        <div class="w-12 h-12 rounded-xl bg-violet-600/25 border border-violet-500/40
+                    flex items-center justify-center">
+          <svg class="w-6 h-6 text-violet-400" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125
+                     1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0
+                     12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125
+                     1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0
+                     1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+          </svg>
+        </div>
+        <div class="text-center">
+          <p id="single-filename" class="text-white font-bold text-sm truncate max-w-xs"></p>
+          <p id="single-fileinfo" class="text-white/60 text-xs mt-0.5"></p>
+          <p class="text-violet-400/80 text-xs mt-1">Click to change</p>
+        </div>
+      </div>
+
+      <input id="single-input" type="file" accept=".pdf" class="hidden"/>
+    </label>
+
+    <!-- Metadata (shown after file selected) -->
+    <div id="single-meta"
+         class="hidden bg-white/[0.05] border border-white/[0.14] rounded-2xl p-5 space-y-4">
+      <p class="text-xs font-bold uppercase tracking-widest text-white/55">Book details</p>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-white/70 mb-1.5">
+            Title <span class="text-white/40 font-normal">(optional)</span>
+          </label>
+          <input id="single-title"
+                 class="w-full rounded-xl bg-white/[0.06] border border-white/[0.14] px-3 py-2.5
+                        text-sm text-white placeholder-white/40
+                        focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/15
+                        outline-none transition-all"
+                 type="text" maxlength="500" placeholder="Auto-detected"/>
         </div>
         <div>
-          <label class="block text-xs font-medium text-white/50 mb-1.5">
-            Cover image <span class="text-white/25 font-normal">(JPEG / PNG — auto-extracted if omitted)</span>
+          <label class="block text-xs font-semibold text-white/70 mb-1.5">
+            Author <span class="text-white/40 font-normal">(optional)</span>
           </label>
-          <label class="inline-flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg
-                        bg-white/[0.04] border border-white/[0.08] text-white/50 text-sm
-                        hover:bg-white/[0.08] hover:text-white/80 transition-all">
-            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd"
-                    d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0
-                       00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
-            </svg>
-            <span id="single-cover-name">Choose cover image</span>
-            <input id="single-cover" type="file"
-                   accept=".jpg,.jpeg,.png,image/jpeg,image/png" class="hidden"/>
-          </label>
+          <input id="single-author"
+                 class="w-full rounded-xl bg-white/[0.06] border border-white/[0.14] px-3 py-2.5
+                        text-sm text-white placeholder-white/40
+                        focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/15
+                        outline-none transition-all"
+                 type="text" maxlength="500" placeholder="Auto-detected"/>
         </div>
       </div>
-
-      <!-- Convert button -->
-      <button id="single-btn" disabled
-              class="w-full flex items-center justify-center gap-2.5 rounded-xl py-3.5
-                     bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm
-                     disabled:opacity-30 disabled:cursor-not-allowed
-                     transition-colors duration-150 active:scale-[0.99]">
-        <svg id="single-btn-icon" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
-                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992
-                   m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7
-                   M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
-        </svg>
-        <span id="single-btn-label">Convert to EPUB</span>
-      </button>
+      <div>
+        <label class="block text-xs font-semibold text-white/70 mb-1.5">
+          Cover image <span class="text-white/40 font-normal">(JPEG/PNG — auto-extracted if omitted)</span>
+        </label>
+        <label class="inline-flex items-center gap-2 cursor-pointer px-3 py-2 rounded-xl
+                      bg-white/[0.06] border border-white/[0.14] text-white/65 text-xs
+                      hover:bg-white/[0.10] hover:text-white transition-all">
+          <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+                  d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0
+                     00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+          </svg>
+          <span id="single-cover-name">Choose cover image</span>
+          <input id="single-cover" type="file"
+                 accept=".jpg,.jpeg,.png,image/jpeg,image/png" class="hidden"/>
+        </label>
+      </div>
     </div>
+
+    <!-- Convert button -->
+    <button id="single-btn" disabled
+            class="w-full flex items-center justify-center gap-2.5 rounded-2xl py-4
+                   bg-gradient-to-r from-violet-600 to-fuchsia-600
+                   hover:from-violet-500 hover:to-fuchsia-500
+                   text-white font-bold text-sm
+                   disabled:opacity-30 disabled:cursor-not-allowed
+                   transition-all duration-200 active:scale-[0.99]
+                   shadow-lg shadow-violet-900/40 hover:shadow-violet-700/50">
+      <svg id="single-btn-icon" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+           stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992
+                 m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7
+                 M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
+      </svg>
+      <span id="single-btn-label">Convert to EPUB</span>
+    </button>
   </div>
 
   <!-- ════════════════════════════════════════════════════════════════════════
        TAB: MULTIPLE
   ═══════════════════════════════════════════════════════════════════════════ -->
-  <div id="tab-multi" class="tab-panel hidden">
-    <div class="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6 space-y-4">
+  <div id="tab-multi" class="tab-panel hidden space-y-4">
 
-      <!-- Drop zone (compact) -->
-      <label id="multi-dropzone"
-             class="flex items-center justify-center gap-3 w-full rounded-xl py-5 px-6
-                    border-2 border-dashed border-white/20 cursor-pointer
-                    hover:border-violet-400/50 hover:bg-violet-500/[0.03] transition-all">
-        <svg class="w-5 h-5 text-violet-400 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+    <!-- Drop zone (compact) -->
+    <label id="multi-dropzone"
+           class="relative flex items-center gap-4 w-full rounded-2xl py-6 px-6
+                  border-2 border-dashed border-white/20 cursor-pointer
+                  hover:border-violet-500/60 hover:bg-violet-500/[0.04]
+                  transition-all duration-300 group">
+      <div class="w-10 h-10 rounded-xl bg-violet-600/20 border border-violet-500/30
+                  flex items-center justify-center flex-shrink-0
+                  group-hover:bg-violet-600/30 transition-colors">
+        <svg class="w-5 h-5 text-violet-400" fill="none" viewBox="0 0 24 24"
              stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round"
-                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5
-                   m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0
+                   0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
         </svg>
-        <div>
-          <p id="multi-drop-label" class="text-white/70 font-semibold text-sm">
-            Drag &amp; drop PDFs here, or click to browse
-          </p>
-          <p class="text-white/30 text-xs mt-0.5">Multiple files · Max 50 MB each</p>
-        </div>
-        <input id="multi-input" type="file" accept=".pdf" multiple class="hidden"/>
-      </label>
+      </div>
+      <div>
+        <p id="multi-drop-label" class="text-white/85 font-semibold text-sm">
+          Drag &amp; drop PDFs here, or click to browse
+        </p>
+        <p class="text-white/50 text-xs mt-0.5">Multiple files &mdash; max 50 MB each</p>
+      </div>
+      <input id="multi-input" type="file" accept=".pdf" multiple class="hidden"/>
+    </label>
 
-      <!-- File list -->
-      <div id="multi-list" class="space-y-2 hidden"></div>
+    <!-- File queue list -->
+    <div id="multi-list" class="space-y-2 hidden"></div>
 
-      <!-- Convert button -->
-      <button id="multi-btn" disabled
-              class="w-full flex items-center justify-center gap-2.5 rounded-xl py-3.5
-                     bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm
-                     disabled:opacity-30 disabled:cursor-not-allowed
-                     transition-colors duration-150 active:scale-[0.99]">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
-                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992
-                   m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7
-                   M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
-        </svg>
-        <span id="multi-btn-label">Convert to EPUB</span>
-      </button>
-    </div>
+    <!-- Convert button -->
+    <button id="multi-btn" disabled
+            class="w-full flex items-center justify-center gap-2.5 rounded-2xl py-4
+                   bg-gradient-to-r from-violet-600 to-fuchsia-600
+                   hover:from-violet-500 hover:to-fuchsia-500
+                   text-white font-bold text-sm
+                   disabled:opacity-30 disabled:cursor-not-allowed
+                   transition-all duration-200 active:scale-[0.99]
+                   shadow-lg shadow-violet-900/40">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992
+                 m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7
+                 M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
+      </svg>
+      <span id="multi-btn-label">Convert to EPUB</span>
+    </button>
   </div>
 
   <!-- ════════════════════════════════════════════════════════════════════════
-       BOTTOM PROGRESS SECTION  (shared, appears during/after conversion)
+       PROGRESS SECTION
   ═══════════════════════════════════════════════════════════════════════════ -->
-  <div id="progress-section" class="hidden mt-6">
-    <div class="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6">
-      <h3 class="text-xs font-bold uppercase tracking-widest text-white/40 mb-4">
-        Conversion progress
-      </h3>
-      <div id="progress-list" class="space-y-4"></div>
+  <div id="progress-section" class="hidden mt-6 space-y-3">
+    <div class="flex items-center justify-between px-1">
+      <p class="text-xs font-bold uppercase tracking-widest text-white/55">
+        Conversion queue
+      </p>
+      <span id="progress-summary" class="text-xs text-white/50"></span>
     </div>
+    <div id="progress-list" class="space-y-3"></div>
   </div>
 
 </div>
 
-<!-- ── MULTI FILE ROW TEMPLATE ────────────────────────────────────────────── -->
+<!-- ════════════════════════════════════════════════════════════════════════
+     COMPLETION MODAL
+═══════════════════════════════════════════════════════════════════════════ -->
+<div id="done-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black/75 backdrop-blur-md" onclick="closeModal()"></div>
+  <!-- Card -->
+  <div class="modal-card relative bg-[#0e0b1a] border border-white/[0.15] rounded-2xl p-8
+              max-w-md w-full shadow-2xl shadow-black/70 space-y-6">
+
+    <!-- Success icon -->
+    <div class="flex justify-center">
+      <div class="w-18 h-18 rounded-full bg-emerald-500/15 border-2 border-emerald-500/40
+                  flex items-center justify-center p-4">
+        <svg class="w-9 h-9 text-emerald-400" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div class="text-center">
+      <h2 id="modal-title" class="text-2xl font-black text-white"></h2>
+      <p id="modal-subtitle" class="text-white/60 text-sm mt-2"></p>
+    </div>
+
+    <!-- Download list -->
+    <div id="modal-downloads" class="space-y-2 max-h-52 overflow-y-auto pr-1"></div>
+
+    <!-- Close / start over -->
+    <button onclick="closeModal()"
+            class="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl
+                   bg-gradient-to-r from-violet-600 to-fuchsia-600
+                   hover:from-violet-500 hover:to-fuchsia-500
+                   text-white font-bold text-sm transition-all
+                   shadow-lg shadow-violet-900/40 active:scale-[0.99]">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11
+                 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      Start over
+    </button>
+  </div>
+</div>
+
+<!-- ── MULTI FILE ROW TEMPLATE ─────────────────────────────────────────────── -->
 <template id="multi-row-tpl">
-  <div class="flex items-center gap-3 bg-white/[0.03] border border-white/[0.07]
-              rounded-xl px-4 py-3" data-idx="">
-    <svg class="w-7 h-7 text-violet-400/70 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-         stroke="currentColor" stroke-width="1.5">
-      <path stroke-linecap="round" stroke-linejoin="round"
-            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0
-               0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5
-               3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504
-               1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
-    </svg>
+  <div class="flex items-center gap-3 bg-white/[0.05] border border-white/[0.12]
+              rounded-xl px-4 py-3 group" data-idx="">
+    <div class="w-8 h-8 rounded-lg bg-violet-600/15 border border-violet-500/25
+                flex items-center justify-center flex-shrink-0">
+      <svg class="w-4 h-4 text-violet-400" fill="none" viewBox="0 0 24 24"
+           stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0
+                 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5
+                 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504
+                 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+      </svg>
+    </div>
     <div class="flex-1 min-w-0">
       <p class="row-name text-sm font-semibold text-white truncate"></p>
-      <p class="row-info text-xs text-white/35 mt-0.5"></p>
+      <p class="row-info text-xs text-white/55 mt-0.5"></p>
     </div>
-    <button class="row-del w-7 h-7 rounded-lg text-white/25 hover:text-red-400
-                   hover:bg-red-500/10 flex items-center justify-center transition-all flex-shrink-0"
+    <button class="row-del w-7 h-7 rounded-lg text-white/40 hover:text-red-400
+                   hover:bg-red-500/15 flex items-center justify-center
+                   transition-all opacity-0 group-hover:opacity-100 flex-shrink-0"
             type="button">
-      <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+      <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd"
               d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0
                  111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10
@@ -227,43 +328,133 @@
   </div>
 </template>
 
-<!-- ── PROGRESS ROW TEMPLATE ────────────────────────────────────────────── -->
+<!-- ── PROGRESS ROW TEMPLATE ──────────────────────────────────────────────── -->
 <template id="progress-row-tpl">
-  <div class="progress-row space-y-1.5" data-job="">
-    <div class="flex items-center justify-between gap-2">
-      <p class="pr-name text-sm font-medium text-white/80 truncate"></p>
-      <div class="flex items-center gap-2 flex-shrink-0">
-        <span class="pr-badge px-2 py-0.5 rounded-full text-[11px] font-semibold
-                     bg-white/10 text-white/50"></span>
-        <span class="pr-pct text-xs text-white/35"></span>
+  <div class="progress-row bg-white/[0.05] border border-white/[0.12]
+              rounded-2xl p-4 space-y-3" data-job="">
+
+    <!-- File name + status badge -->
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-8 h-8 rounded-lg bg-violet-600/15 border border-violet-500/25
+                    flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-violet-400" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0
+                     0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5
+                     3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504
+                     1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+          </svg>
+        </div>
+        <p class="pr-name text-sm font-semibold text-white truncate"></p>
+      </div>
+      <span class="pr-badge px-2.5 py-1 rounded-full text-[10px] font-bold uppercase
+                   tracking-wider bg-white/15 text-white/65 flex-shrink-0"></span>
+    </div>
+
+    <!-- Step pipeline -->
+    <div class="pr-pipeline flex items-center gap-0"></div>
+
+    <!-- Progress bar -->
+    <div class="space-y-1.5">
+      <div class="w-full bg-white/[0.08] rounded-full h-1.5 overflow-hidden">
+        <div class="pr-bar h-full rounded-full bg-violet-500
+                    transition-[width] duration-700 ease-out" style="width:0%"></div>
+      </div>
+      <div class="flex items-center justify-between gap-2">
+        <p class="pr-step-label text-xs text-white/65 flex items-center gap-1.5">
+          <span class="pr-step-spinner inline-block w-3 h-3 rounded-full border border-violet-500/50
+                       border-t-violet-400 animate-spin hidden"></span>
+          <span class="pr-step-text"></span>
+        </p>
+        <div class="flex items-center gap-3">
+          <span class="pr-pct text-xs text-white/50 tabular-nums"></span>
+          <a class="pr-dl hidden items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold
+                    bg-emerald-500/20 border border-emerald-500/35 text-emerald-300
+                    hover:bg-emerald-500/30 hover:text-emerald-200 transition-all" href="#">
+            <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd"
+                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0
+                       011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414
+                       1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                    clip-rule="evenodd"/>
+            </svg>
+            Download EPUB
+          </a>
+        </div>
       </div>
     </div>
-    <div class="w-full bg-white/[0.06] rounded-full h-2 overflow-hidden">
-      <div class="pr-bar h-full rounded-full bg-violet-500
-                  transition-[width] duration-700 ease-out" style="width:0%"></div>
-    </div>
-    <div class="flex items-center justify-between gap-2">
-      <p class="pr-step text-xs text-white/40"></p>
-      <a class="pr-dl hidden items-center gap-1.5 text-xs font-semibold text-emerald-400
-                hover:text-emerald-300 transition-colors" href="#">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd"
-                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0
-                   011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414
-                   1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                clip-rule="evenodd"/>
-        </svg>
-        Download EPUB
-      </a>
-    </div>
+
   </div>
 </template>
 
 <script>
+// ── Pipeline step definitions ─────────────────────────────────────────────
+const PIPELINE_STEPS = [
+  { id: 'upload',  icon: '↑', label: 'Upload'  },
+  { id: 'analyze', icon: '⚡', label: 'Analyze' },
+  { id: 'extract', icon: '✦', label: 'Extract' },
+  { id: 'build',   icon: '◈', label: 'Build'   },
+  { id: 'done',    icon: '✓', label: 'Done'    },
+];
+
+function buildPipeline(container) {
+  container.innerHTML = '';
+  PIPELINE_STEPS.forEach((s, i) => {
+    const node = document.createElement('div');
+    node.dataset.step = s.id;
+    node.className = 'pipeline-node flex flex-col items-center gap-1 flex-1';
+    node.innerHTML = `
+      <div class="step-dot w-8 h-8 rounded-full border-2 border-white/20 bg-white/[0.05]
+                  flex items-center justify-center text-xs text-white/40
+                  transition-all duration-400">${s.icon}</div>
+      <span class="step-lbl text-[10px] text-white/40 font-medium transition-colors duration-400">
+        ${s.label}
+      </span>`;
+    container.appendChild(node);
+    if (i < PIPELINE_STEPS.length - 1) {
+      const line = document.createElement('div');
+      line.dataset.lineAfter = s.id;
+      line.className = 'pipeline-line flex-1 h-px bg-white/[0.12] mt-4 mx-1 transition-all duration-400';
+      container.appendChild(line);
+    }
+  });
+}
+
+function setPipelineStep(container, stepId, failed = false) {
+  const order = ['upload', 'analyze', 'extract', 'build', 'done'];
+  const idx   = order.indexOf(stepId);
+  PIPELINE_STEPS.forEach((s, i) => {
+    const node   = container.querySelector(`[data-step="${s.id}"]`);
+    if (!node) return;
+    const dot    = node.querySelector('.step-dot');
+    const lbl    = node.querySelector('.step-lbl');
+    const lineEl = container.querySelector(`[data-line-after="${s.id}"]`);
+    const done   = i < idx;
+    const active = i === idx;
+    if (failed && active) {
+      dot.className = 'step-dot w-8 h-8 rounded-full border-2 border-red-500/70 bg-red-500/15 flex items-center justify-center text-xs text-red-400 transition-all duration-400';
+      lbl.className = 'step-lbl text-[10px] text-red-400 font-bold transition-colors duration-400';
+    } else if (done) {
+      dot.className = 'step-dot w-8 h-8 rounded-full border-2 border-violet-500/60 bg-violet-500/20 flex items-center justify-center text-xs text-violet-300 transition-all duration-400';
+      lbl.className = 'step-lbl text-[10px] text-violet-400 font-medium transition-colors duration-400';
+      if (lineEl) lineEl.className = 'pipeline-line flex-1 h-px bg-violet-500/40 mt-4 mx-1 transition-all duration-400';
+    } else if (active) {
+      dot.className = 'step-dot w-8 h-8 rounded-full border-2 border-violet-400 bg-violet-500/25 flex items-center justify-center text-xs text-violet-200 shadow-md shadow-violet-500/40 scale-110 transition-all duration-400';
+      lbl.className = 'step-lbl text-[10px] text-violet-300 font-bold transition-colors duration-400';
+    } else {
+      dot.className = 'step-dot w-8 h-8 rounded-full border-2 border-white/20 bg-white/[0.05] flex items-center justify-center text-xs text-white/40 transition-all duration-400';
+      lbl.className = 'step-lbl text-[10px] text-white/40 font-medium transition-colors duration-400';
+    }
+  });
+}
+
 // ── State ─────────────────────────────────────────────────────────────────
-let currentTab  = 'single';
-let singleFile  = null;    // File object for individual mode
-let multiQueue  = [];      // [{ idx, file, jobId, done, timer }]
+let currentTab    = 'single';
+let singleFile    = null;
+let multiQueue    = [];
+let completedJobs = [];   // { filename, dlUrl }
 
 // ── Tab switching ─────────────────────────────────────────────────────────
 function switchTab(name) {
@@ -272,49 +463,144 @@ function switchTab(name) {
   document.getElementById(`tab-${name}`).classList.remove('hidden');
   document.querySelectorAll('.tab-btn').forEach(btn => {
     const active = btn.dataset.tab === name;
-    btn.className = `tab-btn flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 ${
-      active ? 'bg-violet-600 text-white shadow-sm' : 'text-white/40 hover:text-white/70'
+    btn.className = `tab-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl
+      text-sm font-semibold transition-all duration-200 ${
+      active
+        ? 'bg-violet-600 text-white shadow-lg shadow-violet-900/40'
+        : 'text-white/65 hover:text-white hover:bg-white/[0.05]'
     }`;
   });
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function fmtBytes(b) {
-  return b < 1048576 ? (b/1024).toFixed(1)+' KB' : (b/1048576).toFixed(1)+' MB';
+  return b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
 }
 
-const STEPS = {
-  uploading:  { label:'Uploading…',         pct:8  },
-  analyzing:  { label:'Analyzing PDF…',      pct:20 },
-  extracting: { label:'Extracting text…',    pct:55 },
-  building:   { label:'Building EPUB…',      pct:85 },
-};
-function parseStep(step) {
-  if (!step) return STEPS.analyzing;
+function progressStepToState(step) {
+  if (!step) return { pipelineStep: 'analyze', label: 'Analyzing PDF…', pct: 20, spinner: true };
+  if (step === 'uploading')  return { pipelineStep: 'upload',  label: 'Uploading file…',  pct: 8,  spinner: true };
+  if (step === 'analyzing')  return { pipelineStep: 'analyze', label: 'Analyzing PDF…',   pct: 22, spinner: true };
+  if (step === 'extracting') return { pipelineStep: 'extract', label: 'Extracting text…', pct: 55, spinner: true };
+  if (step === 'building')   return { pipelineStep: 'build',   label: 'Building EPUB…',   pct: 85, spinner: true };
   if (step.startsWith('ocr_')) {
-    const [,n,t] = step.split('_');
-    return { label:`OCR — page ${n} of ${t}`, pct: Math.round(20 + (parseInt(n)/parseInt(t))*60) };
+    const [, n, t] = step.split('_');
+    const ratio = parseInt(n) / Math.max(1, parseInt(t));
+    return { pipelineStep: 'extract', label: `OCR — page ${n} of ${t}`, pct: Math.round(22 + ratio * 58), spinner: true };
   }
-  return STEPS[step] || { label:'Processing…', pct:35 };
+  return { pipelineStep: 'analyze', label: 'Processing…', pct: 35, spinner: true };
 }
 
-// ── Progress section helpers ───────────────────────────────────────────────
+// ── Completion modal ──────────────────────────────────────────────────────
+function openModal() {
+  const modal = document.getElementById('done-modal');
+  const list  = document.getElementById('modal-downloads');
+  const title = document.getElementById('modal-title');
+  const sub   = document.getElementById('modal-subtitle');
+
+  list.innerHTML = '';
+
+  const ok = completedJobs.filter(j => j.dlUrl);
+  if (ok.length === 0) return;
+
+  if (ok.length === 1) {
+    title.textContent = 'Conversion complete!';
+    sub.textContent   = ok[0].epubName + ' is ready to download.';
+  } else {
+    title.textContent = `${ok.length} books ready!`;
+    sub.textContent   = 'All conversions finished successfully.';
+  }
+
+  ok.forEach(({ epubName, dlUrl }) => {
+    const a = document.createElement('a');
+    a.href      = dlUrl;
+    a.className = 'flex items-center gap-3 px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.14] hover:bg-white/[0.10] transition-all group/dl';
+    a.innerHTML = `
+      <svg class="w-4 h-4 text-emerald-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+      </svg>
+      <span class="text-sm font-semibold text-white/85 truncate flex-1 group-hover/dl:text-white">${epubName}</span>
+      <span class="text-xs text-emerald-400 font-bold flex-shrink-0">Download</span>`;
+    list.appendChild(a);
+  });
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closeModal() {
+  document.getElementById('done-modal').classList.add('hidden');
+  document.getElementById('done-modal').classList.remove('flex');
+  resetApp();
+}
+
+function resetApp() {
+  // Reset single
+  singleFile = null;
+  document.getElementById('single-state-empty').classList.remove('hidden');
+  const sel = document.getElementById('single-state-selected');
+  sel.classList.add('hidden');
+  sel.classList.remove('flex');
+  document.getElementById('single-filename').textContent = '';
+  document.getElementById('single-fileinfo').textContent = '';
+  document.getElementById('single-title').value  = '';
+  document.getElementById('single-author').value = '';
+  document.getElementById('single-cover-name').textContent = 'Choose cover image';
+  document.getElementById('single-meta').classList.add('hidden');
+  singleBtn.disabled = true;
+  singleBtnLbl.textContent = 'Convert to EPUB';
+
+  // Reset multi
+  multiQueue = [];
+  multiList.innerHTML = '';
+  multiList.classList.add('hidden');
+  multiDropLbl.textContent = 'Drag & drop PDFs here, or click to browse';
+  multiBtn.disabled = true;
+  document.getElementById('multi-btn-label').textContent = 'Convert to EPUB';
+
+  // Reset progress section
+  document.getElementById('progress-section').classList.add('hidden');
+  document.getElementById('progress-list').innerHTML = '';
+  doneCount     = 0;
+  totalCount    = 0;
+  completedJobs = [];
+  updateProgressSummary();
+}
+
+// ── Progress section ──────────────────────────────────────────────────────
+let doneCount = 0, totalCount = 0;
+
 function ensureProgressSection() {
   document.getElementById('progress-section').classList.remove('hidden');
 }
 
+function updateProgressSummary() {
+  const el = document.getElementById('progress-summary');
+  if (totalCount === 0) { el.textContent = ''; return; }
+  el.textContent = doneCount < totalCount
+    ? `${doneCount} / ${totalCount} done`
+    : `All ${totalCount} converted`;
+}
+
 function addProgressRow(jobId, filename) {
   ensureProgressSection();
-  const tpl  = document.getElementById('progress-row-tpl');
+  const tpl   = document.getElementById('progress-row-tpl');
   const clone = tpl.content.cloneNode(true);
   const row   = clone.firstElementChild;
   row.dataset.job = jobId;
-  row.querySelector('.pr-name').textContent  = filename;
-  row.querySelector('.pr-badge').textContent = 'uploading';
-  row.querySelector('.pr-step').textContent  = 'Uploading…';
-  row.querySelector('.pr-pct').textContent   = '8%';
-  row.querySelector('.pr-bar').style.width   = '8%';
-  document.getElementById('progress-list').appendChild(row);
+  row.querySelector('.pr-name').textContent    = filename;
+  row.querySelector('.pr-badge').textContent   = 'uploading';
+  row.querySelector('.pr-badge').className     =
+    'pr-badge px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 flex-shrink-0';
+  buildPipeline(row.querySelector('.pr-pipeline'));
+  setPipelineStep(row.querySelector('.pr-pipeline'), 'upload');
+  row.querySelector('.pr-bar').style.width     = '8%';
+  row.querySelector('.pr-pct').textContent     = '8%';
+  row.querySelector('.pr-step-text').textContent = 'Uploading file…';
+  row.querySelector('.pr-step-spinner').classList.remove('hidden');
+  document.getElementById('progress-list').prepend(row);
+  totalCount++;
+  updateProgressSummary();
   return document.querySelector(`[data-job="${jobId}"]`);
 }
 
@@ -322,70 +608,71 @@ function getProgressRow(jobId) {
   return document.querySelector(`[data-job="${jobId}"]`);
 }
 
-function updateProgressRow(row, { badge, step, pct, done, dlUrl, filename }) {
-  const BADGE = {
-    uploading:  'bg-amber-500/20 text-amber-300',
-    processing: 'bg-blue-500/20 text-blue-300',
-    done:       'bg-emerald-500/20 text-emerald-300',
-    failed:     'bg-red-500/20 text-red-300',
-  };
+const BADGE_STYLES = {
+  uploading:  'bg-amber-500/20 text-amber-300',
+  processing: 'bg-blue-500/20 text-blue-300',
+  done:       'bg-emerald-500/20 text-emerald-300',
+  failed:     'bg-red-500/20 text-red-300',
+};
+
+function updateProgressRow(row, { badge, pipelineStep, label, pct, spinner, done, dlUrl, filename, failed }) {
   if (badge) {
     const b = row.querySelector('.pr-badge');
     b.textContent = badge;
-    b.className = `pr-badge px-2 py-0.5 rounded-full text-[11px] font-semibold ${BADGE[badge]||'bg-white/10 text-white/50'}`;
+    b.className   = `pr-badge px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex-shrink-0 ${BADGE_STYLES[badge] || 'bg-white/15 text-white/65'}`;
   }
-  if (step !== undefined) row.querySelector('.pr-step').textContent = step;
-  if (pct  !== undefined) {
+  if (pipelineStep) setPipelineStep(row.querySelector('.pr-pipeline'), pipelineStep, !!failed);
+  if (label !== undefined) row.querySelector('.pr-step-text').textContent = label;
+  if (spinner !== undefined) row.querySelector('.pr-step-spinner').classList.toggle('hidden', !spinner);
+  if (pct !== undefined) {
     row.querySelector('.pr-pct').textContent = pct + '%';
     const bar = row.querySelector('.pr-bar');
     bar.style.width = pct + '%';
     bar.className = `pr-bar h-full rounded-full transition-[width] duration-700 ease-out ${
-      pct >= 100 ? 'bg-emerald-500' : 'bg-violet-500'
+      failed ? 'bg-red-500' : pct >= 100 ? 'bg-emerald-500' : 'bg-violet-500'
     }`;
   }
   if (done && dlUrl) {
     const dl = row.querySelector('.pr-dl');
     dl.href = dlUrl;
-    dl.download = filename || '';
+    if (filename) dl.setAttribute('download', filename);
     dl.classList.remove('hidden');
     dl.classList.add('flex');
-    dl.textContent = '';
-    // rebuild with icon
-    dl.innerHTML = `<svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
-      <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-      Download EPUB`;
   }
 }
 
 // ── Job polling ───────────────────────────────────────────────────────────
 function startPolling(jobId, filename, onDone) {
   const row = getProgressRow(jobId);
-  updateProgressRow(row, { badge:'processing', step:'Analyzing PDF…', pct:20 });
+  updateProgressRow(row, { badge: 'processing', pipelineStep: 'analyze', label: 'Analyzing PDF…', pct: 20, spinner: true });
 
   const timer = setInterval(async () => {
     try {
-      const d = await fetch(`/api/v1/jobs/${jobId}`).then(r=>r.json());
+      const d = await fetch(`/api/v1/jobs/${jobId}`).then(r => r.json());
+
       if (d.status === 'completed') {
         clearInterval(timer);
-        updateProgressRow(row, {
-          badge:'done', step:'✓ Complete', pct:100,
-          done:true, dlUrl:d.epub_url, filename
-        });
-        if (onDone) onDone(true);
+        doneCount++;
+        updateProgressSummary();
+        updateProgressRow(row, { badge: 'done', pipelineStep: 'done', label: 'Conversion complete!', pct: 100, spinner: false, done: true, dlUrl: d.epub_url, filename });
+        if (onDone) onDone(true, d.epub_url);
+
       } else if (d.status === 'failed') {
         clearInterval(timer);
-        updateProgressRow(row, { badge:'failed', step:'✗ ' + (d.error||'Failed'), pct:100 });
-        row.querySelector('.pr-bar').className = 'pr-bar h-full rounded-full bg-red-500';
-        if (onDone) onDone(false);
+        doneCount++;
+        updateProgressSummary();
+        updateProgressRow(row, { badge: 'failed', pipelineStep: 'build', label: '✗ ' + (d.error || 'Conversion failed'), pct: 100, spinner: false, failed: true });
+        if (onDone) onDone(false, null);
+
       } else if (d.progress_step) {
-        const { label, pct } = parseStep(d.progress_step);
-        updateProgressRow(row, { badge:'processing', step:label, pct });
+        const state = progressStepToState(d.progress_step);
+        updateProgressRow(row, { badge: 'processing', pipelineStep: state.pipelineStep, label: state.label, pct: state.pct, spinner: state.spinner });
       }
     } catch (_) {}
   }, 1500);
 }
 
-// ── Submit a job and start tracking ──────────────────────────────────────
+// ── Submit a job ──────────────────────────────────────────────────────────
 async function submitJob(file, title, author, cover, onDone) {
   const fd = new FormData();
   fd.append('file', file);
@@ -393,27 +680,26 @@ async function submitJob(file, title, author, cover, onDone) {
   if (author) fd.append('author', author);
   if (cover)  fd.append('cover',  cover);
 
-  // Use a placeholder row while uploading (job ID unknown yet)
   const placeholderKey = 'uploading_' + Date.now();
   const row = addProgressRow(placeholderKey, file.name);
 
   try {
-    const res  = await fetch('/api/v1/jobs', { method:'POST', body:fd });
+    const res  = await fetch('/api/v1/jobs', { method: 'POST', body: fd });
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error?.message || `HTTP ${res.status}`);
-
-    // Update row with real job ID
     row.dataset.job = json.id;
     startPolling(json.id, file.name, onDone);
   } catch (err) {
-    updateProgressRow(row, { badge:'failed', step:'✗ ' + err.message, pct:0 });
-    if (onDone) onDone(false);
+    doneCount++;
+    updateProgressSummary();
+    updateProgressRow(row, { badge: 'failed', pipelineStep: 'upload', label: '✗ ' + err.message, pct: 0, spinner: false, failed: true });
+    if (onDone) onDone(false, null);
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════
 // INDIVIDUAL MODE
-// ═══════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════
 const singleDropzone = document.getElementById('single-dropzone');
 const singleInput    = document.getElementById('single-input');
 const singleMeta     = document.getElementById('single-meta');
@@ -423,22 +709,18 @@ const singleBtnLbl   = document.getElementById('single-btn-label');
 function selectSingleFile(file) {
   if (!file || !file.name.toLowerCase().endsWith('.pdf')) return;
   singleFile = file;
-
   document.getElementById('single-state-empty').classList.add('hidden');
   const sel = document.getElementById('single-state-selected');
   sel.classList.remove('hidden');
   sel.classList.add('flex');
   document.getElementById('single-filename').textContent = file.name;
   document.getElementById('single-fileinfo').textContent = fmtBytes(file.size);
-
   singleMeta.classList.remove('hidden');
   singleBtn.disabled = false;
-
-  // Peek for metadata
   (async () => {
     const fd = new FormData(); fd.append('file', file);
     try {
-      const m = await fetch('/api/v1/jobs/peek', {method:'POST',body:fd}).then(r=>r.json());
+      const m = await fetch('/api/v1/jobs/peek', { method: 'POST', body: fd }).then(r => r.json());
       if (m.page_count > 0)
         document.getElementById('single-fileinfo').textContent = fmtBytes(file.size) + ` · ${m.page_count} pages`;
       if (m.title)  document.getElementById('single-title').value  = m.title;
@@ -447,20 +729,12 @@ function selectSingleFile(file) {
   })();
 }
 
-singleDropzone.addEventListener('dragover', e => {
-  e.preventDefault(); singleDropzone.classList.add('border-violet-400/50','bg-violet-500/[0.03]');
-});
-['dragleave','dragend'].forEach(ev =>
-  singleDropzone.addEventListener(ev, () =>
-    singleDropzone.classList.remove('border-violet-400/50','bg-violet-500/[0.03]')));
-singleDropzone.addEventListener('drop', e => {
-  e.preventDefault();
-  singleDropzone.classList.remove('border-violet-400/50','bg-violet-500/[0.03]');
-  selectSingleFile(e.dataTransfer.files[0]);
-});
-singleInput.addEventListener('change', () => { selectSingleFile(singleInput.files[0]); singleInput.value=''; });
+singleDropzone.addEventListener('dragover', e => { e.preventDefault(); singleDropzone.classList.add('border-violet-500/60', 'bg-violet-500/[0.05]'); });
+['dragleave', 'dragend'].forEach(ev => singleDropzone.addEventListener(ev, () => singleDropzone.classList.remove('border-violet-500/60', 'bg-violet-500/[0.05]')));
+singleDropzone.addEventListener('drop', e => { e.preventDefault(); singleDropzone.classList.remove('border-violet-500/60', 'bg-violet-500/[0.05]'); selectSingleFile(e.dataTransfer.files[0]); });
+singleInput.addEventListener('change', () => { selectSingleFile(singleInput.files[0]); singleInput.value = ''; });
 
-document.getElementById('single-cover').addEventListener('change', function() {
+document.getElementById('single-cover').addEventListener('change', function () {
   document.getElementById('single-cover-name').textContent = this.files[0]?.name || 'Choose cover image';
 });
 
@@ -468,22 +742,27 @@ singleBtn.addEventListener('click', async () => {
   if (!singleFile) return;
   singleBtn.disabled = true;
   singleBtnLbl.textContent = 'Converting…';
+  const capturedFile = singleFile;
 
   await submitJob(
-    singleFile,
+    capturedFile,
     document.getElementById('single-title').value.trim(),
     document.getElementById('single-author').value.trim(),
     document.getElementById('single-cover').files[0],
-    (ok) => {
+    (ok, dlUrl) => {
       singleBtn.disabled = false;
       singleBtnLbl.textContent = 'Convert to EPUB';
+      if (ok && dlUrl) {
+        completedJobs = [{ epubName: capturedFile.name.replace(/\.pdf$/i, '.epub'), dlUrl }];
+        openModal();
+      }
     }
   );
 });
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════
 // MULTIPLE MODE
-// ═══════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════
 const multiDropzone = document.getElementById('multi-dropzone');
 const multiInput    = document.getElementById('multi-input');
 const multiList     = document.getElementById('multi-list');
@@ -494,7 +773,7 @@ const multiRowTpl   = document.getElementById('multi-row-tpl');
 function addMultiFiles(files) {
   for (const f of files) {
     if (!f.name.toLowerCase().endsWith('.pdf')) continue;
-    const idx  = Date.now() + Math.random();
+    const idx   = Date.now() + Math.random();
     const clone = multiRowTpl.content.cloneNode(true);
     const row   = clone.firstElementChild;
     row.dataset.idx = idx;
@@ -506,13 +785,11 @@ function addMultiFiles(files) {
       syncMulti();
     });
     multiList.appendChild(clone);
-    multiQueue.push({ idx, file:f, done:false });
-
-    // Peek for page count
+    multiQueue.push({ idx, file: f, done: false });
     (async () => {
       const fd = new FormData(); fd.append('file', f);
       try {
-        const m = await fetch('/api/v1/jobs/peek',{method:'POST',body:fd}).then(r=>r.json());
+        const m  = await fetch('/api/v1/jobs/peek', { method: 'POST', body: fd }).then(r => r.json());
         const r2 = multiList.querySelector(`[data-idx="${idx}"] .row-info`);
         if (r2 && m.page_count > 0) r2.textContent = fmtBytes(f.size) + ` · ${m.page_count} pages`;
       } catch (_) {}
@@ -525,37 +802,35 @@ function syncMulti() {
   const fresh = multiQueue.filter(e => !e.started);
   multiList.classList.toggle('hidden', multiQueue.length === 0);
   multiDropLbl.textContent = multiQueue.length > 0
-    ? `${multiQueue.length} file${multiQueue.length>1?'s':''} queued — drop more to add`
+    ? `${multiQueue.length} file${multiQueue.length > 1 ? 's' : ''} queued — drop more to add`
     : 'Drag & drop PDFs here, or click to browse';
   multiBtn.disabled = fresh.length === 0;
   document.getElementById('multi-btn-label').textContent = fresh.length > 0
-    ? `Convert ${fresh.length} book${fresh.length>1?'s':''} to EPUB`
+    ? `Convert ${fresh.length} book${fresh.length > 1 ? 's' : ''} to EPUB`
     : 'Convert to EPUB';
 }
 
-multiDropzone.addEventListener('dragover', e => {
-  e.preventDefault(); multiDropzone.classList.add('border-violet-400/50','bg-violet-500/[0.03]');
-});
-['dragleave','dragend'].forEach(ev =>
-  multiDropzone.addEventListener(ev, () =>
-    multiDropzone.classList.remove('border-violet-400/50','bg-violet-500/[0.03]')));
-multiDropzone.addEventListener('drop', e => {
-  e.preventDefault();
-  multiDropzone.classList.remove('border-violet-400/50','bg-violet-500/[0.03]');
-  addMultiFiles(Array.from(e.dataTransfer.files));
-});
-multiInput.addEventListener('change', () => { addMultiFiles(Array.from(multiInput.files)); multiInput.value=''; });
+multiDropzone.addEventListener('dragover', e => { e.preventDefault(); multiDropzone.classList.add('border-violet-500/60', 'bg-violet-500/[0.04]'); });
+['dragleave', 'dragend'].forEach(ev => multiDropzone.addEventListener(ev, () => multiDropzone.classList.remove('border-violet-500/60', 'bg-violet-500/[0.04]')));
+multiDropzone.addEventListener('drop', e => { e.preventDefault(); multiDropzone.classList.remove('border-violet-500/60', 'bg-violet-500/[0.04]'); addMultiFiles(Array.from(e.dataTransfer.files)); });
+multiInput.addEventListener('change', () => { addMultiFiles(Array.from(multiInput.files)); multiInput.value = ''; });
 
 multiBtn.addEventListener('click', () => {
   const fresh = multiQueue.filter(e => !e.started);
   if (!fresh.length) return;
+  completedJobs = [];
   let remaining = fresh.length;
   fresh.forEach(entry => {
     entry.started = true;
-    submitJob(entry.file, '', '', null, (ok) => {
+    const capturedFile = entry.file;
+    submitJob(capturedFile, '', '', null, (ok, dlUrl) => {
       entry.done = true;
+      if (ok && dlUrl) completedJobs.push({ epubName: capturedFile.name.replace(/\.pdf$/i, '.epub'), dlUrl });
       remaining--;
-      if (remaining === 0) syncMulti();
+      if (remaining === 0) {
+        syncMulti();
+        if (completedJobs.length > 0) openModal();
+      }
     });
   });
   syncMulti();
