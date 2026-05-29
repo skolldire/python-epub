@@ -1,5 +1,4 @@
 import asyncio
-from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 
 from pdf_epub.domain.ports import FileStoragePort, JobRepositoryPort
@@ -21,8 +20,10 @@ async def cleanup_loop(repo: JobRepositoryPort, storage: FileStoragePort) -> Non
     """
     while True:
         await asyncio.sleep(_INTERVAL_SECONDS)
-        with suppress(Exception):
+        try:
             _run_cleanup(repo, storage)
+        except Exception:
+            log.exception("cleanup_error")
 
 
 def _run_cleanup(repo: JobRepositoryPort, storage: FileStoragePort) -> None:

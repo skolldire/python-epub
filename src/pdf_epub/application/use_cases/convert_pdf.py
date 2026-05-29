@@ -30,6 +30,7 @@ class ConvertPdf:
         ocr_lang: str = "spa+eng",
         max_pages: int = 1000,
         max_seconds: int = 300,
+        default_language: str = "en",
     ) -> None:
         self._repo = repo
         self._storage = storage
@@ -40,6 +41,7 @@ class ConvertPdf:
         self._ocr_lang = ocr_lang
         self._max_pages = max_pages
         self._max_seconds = max_seconds
+        self._default_language = default_language
 
     def execute(self, job_id: str) -> None:
         job = self._repo.get(job_id)
@@ -81,7 +83,7 @@ class ConvertPdf:
                 job.update_step("ocr_0_?")
                 self._repo.save(job)
                 document = self._extract_with_ocr(
-                    job.pdf_path, job.original_filename, ocr_progress, deadline
+                    job.pdf_path, job.original_filename, page_count, ocr_progress, deadline
                 )
             else:
                 # ── Step 2b: text extraction ──────────────────────────────
@@ -136,15 +138,11 @@ class ConvertPdf:
         self,
         pdf_path: Path,
         filename: str,
+        total_pages: int,
         progress_cb: Callable[[str], None] | None,
         deadline: float,
     ) -> Document:
         """Renders each page with poppler then runs Tesseract OCR."""
-        import pdfplumber
-
-        with pdfplumber.open(pdf_path) as pdf:
-            total_pages = len(pdf.pages)
-
         pages = []
         for page_num in range(1, total_pages + 1):
             self._check_deadline(deadline, f"OCR page {page_num}/{total_pages}")
@@ -169,4 +167,4 @@ class ConvertPdf:
             pages.append(Page(number=page_num, blocks=[image_block, block], is_scanned=True))
 
         title = filename.replace(".pdf", "").replace("_", " ").replace("-", " ").title()
-        return Document(title=title, author="", pages=pages)
+        return Document(title=title, author="", pages=pages, language=self._default_language)

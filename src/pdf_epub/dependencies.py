@@ -92,6 +92,7 @@ def get_convert_use_case(
         ocr_lang=settings.ocr_lang,
         max_pages=settings.max_pages,
         max_seconds=settings.max_conversion_seconds,
+        default_language=settings.document_language,
     )
 
 

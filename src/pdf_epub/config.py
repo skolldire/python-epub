@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -36,10 +36,24 @@ class Settings(BaseSettings):
     # Conversion safety limits
     max_pages: int = Field(default=1000, ge=1)
     max_conversion_seconds: int = Field(default=300, ge=30)
+    conversion_workers: int = Field(default=2, ge=1)
+    shutdown_timeout_seconds: int = Field(default=30, ge=5)
+
+    # Default BCP 47 language tag written to generated EPUB metadata.
+    document_language: str = "en"
 
     @property
     def is_production(self) -> bool:
         return self.environment == "production"
+
+    @model_validator(mode="after")
+    def _require_api_key_in_production(self) -> "Settings":
+        if self.is_production and not self.api_key:
+            raise ValueError(
+                "API_KEY must be set when ENVIRONMENT=production. "
+                "Generate one with: openssl rand -hex 32"
+            )
+        return self
 
 
 @lru_cache

@@ -191,6 +191,28 @@ curl -H "Authorization: Bearer $API_KEY" \
 
 ---
 
+### List jobs
+
+```
+GET /api/v1/jobs
+```
+
+| Query param | Type | Default | Description |
+|---|---|---|---|
+| `limit` | integer | 100 | Maximum number of jobs returned (1–1000) |
+| `offset` | integer | 0 | Number of jobs to skip |
+
+**Rate limit:** 60 requests / minute per IP.
+
+**Response `200 OK`:** array of job objects (same shape as the single-job response).
+
+```bash
+curl http://localhost:8000/api/v1/jobs
+curl "http://localhost:8000/api/v1/jobs?limit=10&offset=20"
+```
+
+---
+
 ### Get job status
 
 ```

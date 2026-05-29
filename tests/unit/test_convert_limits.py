@@ -108,21 +108,13 @@ def test_ocr_deadline_per_page_fails_job():
     mocks["renderer"].render_page.return_value = b"\x89PNG\r\n"
     mocks["ocr"].extract_text.return_value = "text"
 
-    # _extract_with_ocr opens the PDF via pdfplumber to get total_pages.
-    # Patch it so the fake path doesn't raise FileNotFoundError.
-    fake_pdf_ctx = MagicMock()
-    fake_pdf_ctx.__enter__ = lambda s: s
-    fake_pdf_ctx.__exit__ = MagicMock(return_value=False)
-    fake_pdf_ctx.pages = [MagicMock(), MagicMock(), MagicMock()]  # 3 pages
-
     # execute() call pattern (OCR path, 3 pages):
     #   call 1 → deadline = base + 300
     #   call 2 → _check_deadline page 1   (passes)
     #   call 3 → _check_deadline page 2   (expires)
     base = time.monotonic()
     with patch("pdf_epub.application.use_cases.convert_pdf.time.monotonic",
-               side_effect=[base, base, base + 9999]), \
-         patch("pdfplumber.open", return_value=fake_pdf_ctx):
+               side_effect=[base, base, base + 9999]):
         uc.execute("j1")
 
     job = mocks["repo"].get.return_value

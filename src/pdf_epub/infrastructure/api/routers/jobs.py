@@ -4,7 +4,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, Form, Request, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile, status
 from fastapi.responses import FileResponse, JSONResponse
 
 from pdf_epub.application.use_cases.convert_pdf import ConvertPdf
@@ -27,6 +27,9 @@ from pdf_epub.domain.value_objects import JobStatus
 from pdf_epub.exceptions import AppError, NotFoundError, UnprocessableError
 from pdf_epub.infrastructure.api.limiter import limiter
 from pdf_epub.infrastructure.api.schemas.responses import JobResponse
+from pdf_epub.log import get_logger
+
+log = get_logger(__name__)
 
 _UUID_RE = re.compile(
     r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
@@ -76,8 +79,20 @@ async def peek_pdf(request: Request, file: UploadFile = File(...)) -> JSONRespon
                 author     = str(meta.get("Author") or "").strip()
                 page_count = len(pdf.pages)
         except Exception:
-            pass
+            log.debug("peek_error", exc_info=True)
     return JSONResponse({"title": title, "author": author, "page_count": page_count})
+
+
+@router.get("", response_model=list[JobResponse])
+@limiter.limit("60/minute")
+async def list_jobs(
+    request: Request,
+    repo: JobRepositoryPort = Depends(get_job_repo),
+    limit: int = Query(default=100, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
+) -> list[JobResponse]:
+    jobs = repo.list_all()
+    return [_to_response(job, request) for job in jobs[offset : offset + limit]]
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=JobResponse)

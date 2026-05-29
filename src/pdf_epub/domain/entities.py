@@ -48,7 +48,7 @@ class Document:
     title: str
     author: str
     pages: list[Page]
-    language: str = "es"
+    language: str = "en"
     cover_image: bytes | None = None   # PNG bytes of the book cover
 
 

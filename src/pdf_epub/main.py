@@ -13,7 +13,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from slowapi.errors import RateLimitExceeded
 
 from pdf_epub.config import get_settings
-from pdf_epub.dependencies import _file_storage, _job_repo
+from pdf_epub.dependencies import get_job_repo, get_storage
 from pdf_epub.exceptions import (
     AppError,
     app_error_handler,
@@ -58,10 +58,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         auth_enabled=bool(settings.api_key),
     )
 
-    executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="conv")
+    executor = ThreadPoolExecutor(max_workers=settings.conversion_workers, thread_name_prefix="conv")
     app.state.executor = executor
 
-    cleanup_task = asyncio.create_task(cleanup_loop(_job_repo(), _file_storage()))
+    cleanup_task = asyncio.create_task(cleanup_loop(get_job_repo(), get_storage()))
 
     yield
 
@@ -69,8 +69,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     with suppress(asyncio.CancelledError):
         await cleanup_task
 
-    # Don't wait for in-flight conversions; stale jobs are cleaned up on next start.
-    executor.shutdown(wait=False)
+    loop = asyncio.get_running_loop()
+    try:
+        await asyncio.wait_for(
+            loop.run_in_executor(None, executor.shutdown, True),
+            timeout=settings.shutdown_timeout_seconds,
+        )
+    except TimeoutError:
+        log.warning("executor_drain_timeout", timeout_seconds=settings.shutdown_timeout_seconds)
+        executor.shutdown(wait=False)
 
     log.info("service_stopped")
 

@@ -20,13 +20,14 @@ services:
       MAX_UPLOAD_BYTES: "52428800"
       MAX_PAGES: "1000"
       MAX_CONVERSION_SECONDS: "300"
+      CONVERSION_WORKERS: "2"
+      SHUTDOWN_TIMEOUT_SECONDS: "30"
       METRICS_ENABLED: "true"
       # REQUIRED in production — generate with: openssl rand -hex 32
       # API_KEY: ""
       #
-      # Restrict to your domain in production:
-      #   CORS_ORIGINS: '["https://yourapp.example.com"]'
-      CORS_ORIGINS: '["*"]'
+      # REQUIRED in production — restrict to your domain:
+      # CORS_ORIGINS: '["https://yourapp.example.com"]'
     deploy:
       resources:
         limits:
