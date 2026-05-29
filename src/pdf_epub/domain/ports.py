@@ -12,6 +12,10 @@ class PdfExtractorPort(ABC):
         """Returns True when the PDF has no machine-readable text (scanned)."""
 
     @abstractmethod
+    def get_page_count(self, pdf_path: Path) -> int:
+        """Returns the total number of pages without full extraction."""
+
+    @abstractmethod
     def extract(self, pdf_path: Path) -> Document:
         """Returns a fully structured Document from the given PDF."""
 

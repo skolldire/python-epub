@@ -18,6 +18,14 @@ services:
       DEBUG: "false"
       OCR_LANG: spa+eng
       MAX_UPLOAD_BYTES: "52428800"
+      MAX_PAGES: "1000"
+      MAX_CONVERSION_SECONDS: "300"
+      # REQUIRED in production — set a strong random value:
+      #   API_KEY: "$(openssl rand -hex 32)"
+      # API_KEY: ""
+      #
+      # Restrict to your domain instead of wildcard:
+      #   CORS_ORIGINS: '["https://yourapp.example.com"]'
       CORS_ORIGINS: '["*"]'
     healthcheck:
       test: ["CMD", "python", "-c",

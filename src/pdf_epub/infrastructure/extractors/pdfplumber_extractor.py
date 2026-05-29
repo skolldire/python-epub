@@ -180,6 +180,13 @@ def _is_cid_garbage(text: str) -> bool:
 
 class PdfPlumberExtractor(PdfExtractorPort):
 
+    def get_page_count(self, pdf_path: Path) -> int:
+        try:
+            with pdfplumber.open(pdf_path) as pdf:
+                return len(pdf.pages)
+        except Exception as exc:
+            raise ExtractionError(f"Could not read PDF page count: {exc}") from exc
+
     def is_scanned(self, pdf_path: Path) -> bool:
         try:
             with pdfplumber.open(pdf_path) as pdf:

@@ -1,31 +1,32 @@
+import asyncio
 import io
 import re
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Request, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile, status
 from fastapi.responses import FileResponse, JSONResponse
 
 from pdf_epub.application.use_cases.convert_pdf import ConvertPdf
 from pdf_epub.application.use_cases.download_epub import DownloadEpub
 from pdf_epub.application.use_cases.get_job_status import GetJobStatus
 from pdf_epub.application.use_cases.upload_pdf import UploadPdf
+from pdf_epub.auth import verify_api_key
 from pdf_epub.dependencies import (
     get_convert_use_case,
     get_download_use_case,
+    get_executor,
+    get_job_repo,
     get_status_use_case,
     get_upload_use_case,
 )
 from pdf_epub.domain.entities import ConversionJob
-from pdf_epub.domain.exceptions import (
-    ExtractionError,
-    InvalidJobStateError,
-)
+from pdf_epub.domain.exceptions import ExtractionError, InvalidJobStateError
 from pdf_epub.domain.ports import JobRepositoryPort
 from pdf_epub.domain.value_objects import JobStatus
 from pdf_epub.exceptions import AppError, NotFoundError, UnprocessableError
 from pdf_epub.infrastructure.api.limiter import limiter
 from pdf_epub.infrastructure.api.schemas.responses import JobResponse
-from pdf_epub.dependencies import get_job_repo
 
 _UUID_RE = re.compile(
     r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
@@ -33,16 +34,15 @@ _UUID_RE = re.compile(
 
 
 def _safe_download_name(filename: str) -> str:
-    """Returns stem + .epub preserving the original name including unicode.
-
-    Starlette encodes the filename via RFC 5987 (filename*=utf-8''...) so
-    the browser always receives the correct name regardless of characters.
-    Only null bytes and path separators are removed as a safety measure.
-    """
     stem = re.sub(r"[\x00/\\]", "", Path(filename).stem).strip() or "book"
     return stem + ".epub"
 
-router = APIRouter(prefix="/api/v1/jobs", tags=["jobs"])
+
+router = APIRouter(
+    prefix="/api/v1/jobs",
+    tags=["jobs"],
+    dependencies=[Depends(verify_api_key)],
+)
 
 
 def _to_response(job: ConversionJob, request: Request) -> JobResponse:
@@ -72,8 +72,8 @@ async def peek_pdf(request: Request, file: UploadFile = File(...)) -> JSONRespon
             import pdfplumber
             with pdfplumber.open(io.BytesIO(content)) as pdf:
                 meta = pdf.metadata or {}
-                title  = str(meta.get("Title")  or "").strip()
-                author = str(meta.get("Author") or "").strip()
+                title      = str(meta.get("Title")  or "").strip()
+                author     = str(meta.get("Author") or "").strip()
                 page_count = len(pdf.pages)
         except Exception:
             pass
@@ -84,15 +84,15 @@ async def peek_pdf(request: Request, file: UploadFile = File(...)) -> JSONRespon
 @limiter.limit("10/minute")
 async def create_job(
     request: Request,
-    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     title: str | None = Form(default=None),
     author: str | None = Form(default=None),
     cover: UploadFile | None = File(default=None),
     upload: UploadPdf = Depends(get_upload_use_case),
     convert: ConvertPdf = Depends(get_convert_use_case),
+    executor: ThreadPoolExecutor = Depends(get_executor),
 ) -> JobResponse:
-    content = await file.read()
+    content  = await file.read()
     filename = file.filename or "upload.pdf"
 
     cover_bytes: bytes | None = None
@@ -110,7 +110,9 @@ async def create_job(
     except ExtractionError as exc:
         raise UnprocessableError(str(exc))
 
-    background_tasks.add_task(convert.execute, job.id)
+    # Run conversion in the dedicated executor — does not share uvicorn's threadpool.
+    asyncio.get_running_loop().run_in_executor(executor, convert.execute, job.id)
+
     return _to_response(job, request)
 
 

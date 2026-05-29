@@ -1,3 +1,4 @@
+import time
 from collections.abc import Callable
 from pathlib import Path
 
@@ -27,6 +28,8 @@ class ConvertPdf:
         ocr: OcrPort,
         builder: EpubBuilderPort,
         ocr_lang: str = "spa+eng",
+        max_pages: int = 1000,
+        max_seconds: int = 300,
     ) -> None:
         self._repo = repo
         self._storage = storage
@@ -35,6 +38,8 @@ class ConvertPdf:
         self._ocr = ocr
         self._builder = builder
         self._ocr_lang = ocr_lang
+        self._max_pages = max_pages
+        self._max_seconds = max_seconds
 
     def execute(self, job_id: str) -> None:
         job = self._repo.get(job_id)
@@ -50,13 +55,23 @@ class ConvertPdf:
         self._repo.save(job)
         log.info("conversion_started", job_id=job_id, filename=job.original_filename)
 
+        # Conversion deadline — enforced before each major step and each OCR page.
+        deadline = time.monotonic() + self._max_seconds
+
         try:
-            # ── Step 1: detect type ───────────────────────────────────────
+            # ── Step 1: analyze ───────────────────────────────────────────
             job.update_step("analyzing")
             self._repo.save(job)
 
+            page_count = self._extractor.get_page_count(job.pdf_path)
+            if page_count > self._max_pages:
+                raise ExtractionError(
+                    f"PDF has {page_count} pages; the {self._max_pages}-page limit "
+                    "protects the service from memory exhaustion"
+                )
+
             if self._extractor.is_scanned(job.pdf_path):
-                log.info("scanned_pdf_detected", job_id=job_id)
+                log.info("scanned_pdf_detected", job_id=job_id, pages=page_count)
 
                 def ocr_progress(step: str) -> None:
                     job.update_step(step)
@@ -66,7 +81,7 @@ class ConvertPdf:
                 job.update_step("ocr_0_?")
                 self._repo.save(job)
                 document = self._extract_with_ocr(
-                    job.pdf_path, job.original_filename, ocr_progress
+                    job.pdf_path, job.original_filename, ocr_progress, deadline
                 )
             else:
                 # ── Step 2b: text extraction ──────────────────────────────
@@ -83,6 +98,7 @@ class ConvertPdf:
                 document.cover_image = job.custom_cover
 
             # ── Step 3: build EPUB ────────────────────────────────────────
+            self._check_deadline(deadline, "EPUB assembly")
             job.update_step("building")
             self._repo.save(job)
 
@@ -100,11 +116,19 @@ class ConvertPdf:
         finally:
             self._repo.save(job)
 
+    # ── Helpers ───────────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _check_deadline(deadline: float, step: str) -> None:
+        if time.monotonic() > deadline:
+            raise ExtractionError(f"Conversion timed out before: {step}")
+
     def _extract_with_ocr(
         self,
         pdf_path: Path,
         filename: str,
-        progress_cb: Callable[[str], None] | None = None,
+        progress_cb: Callable[[str], None] | None,
+        deadline: float,
     ) -> Document:
         """Renders each page with poppler then runs Tesseract OCR."""
         import pdfplumber
@@ -114,6 +138,8 @@ class ConvertPdf:
 
         pages = []
         for page_num in range(1, total_pages + 1):
+            self._check_deadline(deadline, f"OCR page {page_num}/{total_pages}")
+
             if progress_cb and page_num % max(1, total_pages // 20) == 0:
                 progress_cb(f"ocr_{page_num}_{total_pages}")
 

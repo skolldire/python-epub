@@ -1,6 +1,7 @@
 import asyncio
 import pathlib
 from collections.abc import AsyncGenerator
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI, Request
@@ -53,7 +54,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         "service_starting",
         environment=settings.environment,
         version=settings.app_version,
+        auth_enabled=bool(settings.api_key),
     )
+
+    executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="conv")
+    app.state.executor = executor
 
     cleanup_task = asyncio.create_task(cleanup_loop(_job_repo(), _file_storage()))
 
@@ -62,6 +67,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     cleanup_task.cancel()
     with suppress(asyncio.CancelledError):
         await cleanup_task
+
+    # Don't wait for in-flight conversions; stale jobs are cleaned up on next start.
+    executor.shutdown(wait=False)
 
     log.info("service_stopped")
 
@@ -79,17 +87,21 @@ def create_app() -> FastAPI:
 
     app.state.limiter = limiter
 
+    # Credentials must not be sent to a wildcard origin — the browser enforces
+    # this, but we also enforce it server-side for correctness.
+    allow_credentials = settings.cors_origins != ["*"]
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
-        allow_credentials=True,
+        allow_credentials=allow_credentials,
         allow_methods=["*"],
         allow_headers=["*"],
     )
     app.add_middleware(RequestContextMiddleware)
 
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)  # type: ignore[arg-type]
-    app.add_exception_handler(AppError, app_error_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)      # type: ignore[arg-type]
+    app.add_exception_handler(AppError, app_error_handler)                  # type: ignore[arg-type]
     app.add_exception_handler(RequestValidationError, validation_error_handler)  # type: ignore[arg-type]
     app.add_exception_handler(Exception, unhandled_exception_handler)
 
