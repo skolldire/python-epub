@@ -12,22 +12,9 @@ services:
       - "${PORT:-8000}:8000"
     volumes:
       - bookforge_data:/data
-    environment:
-      ENVIRONMENT: production
-      LOG_LEVEL: INFO
-      DEBUG: "false"
-      OCR_LANG: spa+eng
-      MAX_UPLOAD_BYTES: "52428800"
-      MAX_PAGES: "1000"
-      MAX_CONVERSION_SECONDS: "300"
-      CONVERSION_WORKERS: "2"
-      SHUTDOWN_TIMEOUT_SECONDS: "30"
-      METRICS_ENABLED: "true"
-      # REQUIRED in production — generate with: openssl rand -hex 32
-      # API_KEY: ""
-      #
-      # REQUIRED in production — restrict to your domain:
-      # CORS_ORIGINS: '["https://yourapp.example.com"]'
+    env_file:
+      - path: .env
+        required: false
     deploy:
       resources:
         limits:

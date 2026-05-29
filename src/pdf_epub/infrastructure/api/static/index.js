@@ -252,7 +252,17 @@ function startPolling(jobId, filename, onDone) {
 
   const timer = setInterval(async () => {
     try {
-      const d = await fetch(`/api/v1/jobs/${jobId}`).then(r => r.json());
+      const res = await fetch(`/api/v1/jobs/${jobId}`);
+      if (!res.ok) {
+        clearInterval(timer);
+        doneCount++;
+        updateProgressSummary();
+        const msg = res.status === 404 ? 'Job not found — the server may have restarted' : `Server error (${res.status})`;
+        updateProgressRow(row, { badge: 'failed', pipelineStep: 'build', label: '✗ ' + msg, pct: 100, spinner: false, failed: true });
+        if (onDone) onDone(false, null);
+        return;
+      }
+      const d = await res.json();
 
       if (d.status === 'completed') {
         clearInterval(timer);

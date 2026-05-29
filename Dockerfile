@@ -38,12 +38,12 @@ USER bookforge
 
 # ── Runtime configuration ──────────────────
 ENV PYTHONPATH=/app/src \
-    ENVIRONMENT=production \
     LOG_LEVEL=INFO \
     DEBUG=false \
     UPLOAD_DIR=/data/uploads \
     EPUB_DIR=/data/epubs \
-    OCR_LANG=spa+eng
+    OCR_LANG=spa+eng \
+    CONVERSION_WORKERS=1
 
 EXPOSE 8000
 
@@ -52,5 +52,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 
 CMD ["python", "-m", "uvicorn", "pdf_epub.main:app", \
      "--host", "0.0.0.0", "--port", "8000", \
-     "--workers", "1", \
      "--no-access-log"]

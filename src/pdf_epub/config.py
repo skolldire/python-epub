@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,6 +29,22 @@ class Settings(BaseSettings):
 
     # Authentication — leave unset to disable (development / local use)
     api_key: str | None = Field(default=None)
+
+    @field_validator("api_key", mode="before")
+    @classmethod
+    def _normalize_api_key(cls, v: object) -> object:
+        """Treat empty string (from unset env var) as None."""
+        if isinstance(v, str) and not v.strip():
+            return None
+        return v
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def _normalize_cors_origins(cls, v: object) -> object:
+        """Treat empty string (from unset env var) as the default wildcard."""
+        if isinstance(v, str) and not v.strip():
+            return ["*"]
+        return v
 
     # Expose /metrics endpoint (Prometheus). Restrict at the reverse-proxy in production.
     metrics_enabled: bool = True
