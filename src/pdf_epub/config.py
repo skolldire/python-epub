@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     # Authentication — leave unset to disable (development / local use)
     api_key: str | None = Field(default=None)
 
+    # Expose /metrics endpoint (Prometheus). Restrict at the reverse-proxy in production.
+    metrics_enabled: bool = True
+
     # Conversion safety limits
     max_pages: int = Field(default=1000, ge=1)
     max_conversion_seconds: int = Field(default=300, ge=30)

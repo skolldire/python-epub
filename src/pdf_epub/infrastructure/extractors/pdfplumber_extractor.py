@@ -185,7 +185,10 @@ class PdfPlumberExtractor(PdfExtractorPort):
             with pdfplumber.open(pdf_path) as pdf:
                 return len(pdf.pages)
         except Exception as exc:
-            raise ExtractionError(f"Could not read PDF page count: {exc}") from exc
+            log.warning("pdf_page_count_failed", error=str(exc), path=str(pdf_path))
+            raise ExtractionError(
+                "The PDF could not be opened — it may be corrupted or password-protected"
+            ) from exc
 
     def is_scanned(self, pdf_path: Path) -> bool:
         try:
@@ -209,7 +212,10 @@ class PdfPlumberExtractor(PdfExtractorPort):
                 # If ANY sampled page has substantial readable text, it's not scanned.
                 return max(char_counts, default=0) < _SCAN_CHAR_THRESHOLD
         except Exception as exc:
-            raise ExtractionError(f"Could not inspect PDF: {exc}") from exc
+            log.warning("pdf_scan_check_failed", error=str(exc), path=str(pdf_path))
+            raise ExtractionError(
+                "The PDF could not be read — it may be corrupted or password-protected"
+            ) from exc
 
     def extract(self, pdf_path: Path) -> Document:
         try:
@@ -236,7 +242,10 @@ class PdfPlumberExtractor(PdfExtractorPort):
         except ExtractionError:
             raise
         except Exception as exc:
-            raise ExtractionError(f"Extraction failed: {exc}") from exc
+            log.warning("pdf_extraction_failed", error=str(exc), path=str(pdf_path))
+            raise ExtractionError(
+                "Text extraction failed — the PDF structure may be unsupported or the file is damaged"
+            ) from exc
 
         return Document(
             title=str(title),
@@ -339,7 +348,7 @@ class PdfPlumberExtractor(PdfExtractorPort):
                              size_kb=len(buf.getvalue()) // 1024)
                     return buf.getvalue(), None  # keep page in content
                 except Exception:
-                    pass
+                    log.debug("partial_cover_extraction_failed", page=1, exc_info=True)
 
         return None, None
 
@@ -359,7 +368,7 @@ class PdfPlumberExtractor(PdfExtractorPort):
                 images[0].convert("RGB").save(buf, format="JPEG", quality=90, optimize=True)
                 return buf.getvalue()
         except Exception:
-            pass
+            log.debug("page_render_failed", page=page_number, path=str(pdf_path), exc_info=True)
         return None
 
     def _extract_page(
@@ -406,7 +415,7 @@ class PdfPlumberExtractor(PdfExtractorPort):
                     )
                     items.append((bbox.y0, block))
                 except Exception:
-                    pass
+                    log.debug("image_block_extraction_failed", page=page.page_number, exc_info=True)
         else:
             log.debug(
                 "image_extraction_skipped",

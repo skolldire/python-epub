@@ -3,7 +3,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from pdf_epub.domain.entities import Document, ImageBlock, Page, TextBlock
-from pdf_epub.domain.exceptions import ExtractionError, InvalidJobStateError
+from pdf_epub.domain.exceptions import DomainError, ExtractionError, InvalidJobStateError
 from pdf_epub.domain.ports import (
     EpubBuilderPort,
     FileStoragePort,
@@ -109,12 +109,21 @@ class ConvertPdf:
             log.info("conversion_completed", job_id=job_id, epub=str(epub_path))
 
         except (Exception, MemoryError, RecursionError) as exc:
-            error_msg = str(exc) or type(exc).__name__
-            job.fail(error_msg)
-            log.error("conversion_failed", job_id=job_id, error=error_msg)
+            internal_msg = str(exc) or type(exc).__name__
+            log.error("conversion_failed", job_id=job_id, error=internal_msg, exc_info=True)
+            # Domain errors already carry user-safe messages; everything else is opaque.
+            safe_msg = (
+                internal_msg
+                if isinstance(exc, DomainError)
+                else "An unexpected error occurred — please try again or use a different file"
+            )
+            job.fail(safe_msg)
 
         finally:
-            self._repo.save(job)
+            # Guard against resurrecting a job that was explicitly deleted
+            # while conversion was in progress.
+            if self._repo.get(job_id) is not None:
+                self._repo.save(job)
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 

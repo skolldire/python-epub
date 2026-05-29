@@ -171,7 +171,8 @@ class EbooklibBuilder(EpubBuilderPort):
         except BuildError:
             raise
         except Exception as exc:
-            raise BuildError(f"EPUB assembly failed: {exc}") from exc
+            log.warning("epub_build_failed", error=str(exc))
+            raise BuildError("EPUB assembly failed — please try again with a different file") from exc
 
     def _build_cover(
         self,

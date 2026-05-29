@@ -20,13 +20,21 @@ services:
       MAX_UPLOAD_BYTES: "52428800"
       MAX_PAGES: "1000"
       MAX_CONVERSION_SECONDS: "300"
-      # REQUIRED in production — set a strong random value:
-      #   API_KEY: "$(openssl rand -hex 32)"
+      METRICS_ENABLED: "true"
+      # REQUIRED in production — generate with: openssl rand -hex 32
       # API_KEY: ""
       #
-      # Restrict to your domain instead of wildcard:
+      # Restrict to your domain in production:
       #   CORS_ORIGINS: '["https://yourapp.example.com"]'
       CORS_ORIGINS: '["*"]'
+    deploy:
+      resources:
+        limits:
+          memory: 2g        # OCR + pdfplumber can be RAM-hungry on large PDFs
+          cpus: "1.5"
+        reservations:
+          memory: 256m
+          cpus: "0.25"
     healthcheck:
       test: ["CMD", "python", "-c",
              "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]

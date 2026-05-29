@@ -3,22 +3,23 @@ name = "pdf-epub"
 version = "0.1.0"
 description = "PDF to EPUB converter service"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = [
-    "fastapi>=0.111",
-    "uvicorn[standard]>=0.29",
-    "pydantic>=2.7",
-    "pydantic-settings>=2.3",
-    "structlog>=24.2",
-    "python-multipart>=0.0.9",
-    "jinja2>=3.1",
-    "aiofiles>=23.0",
-    "pdfplumber>=0.11",
-    "pdf2image>=1.17",
-    "pytesseract>=0.3.10",
-    "ebooklib>=0.18",
-    "Pillow>=10.0",
-    "slowapi>=0.1.9",
+    "fastapi>=0.111,<1.0",
+    "uvicorn[standard]>=0.29,<1.0",
+    "pydantic>=2.7,<3.0",
+    "pydantic-settings>=2.3,<3.0",
+    "structlog>=24.2,<27.0",
+    "python-multipart>=0.0.9,<1.0",
+    "jinja2>=3.1,<4.0",
+    "aiofiles>=23.0,<25.0",
+    "pdfplumber>=0.11,<1.0",
+    "pdf2image>=1.17,<2.0",
+    "pytesseract>=0.3.10,<1.0",
+    "ebooklib>=0.18,<1.0",
+    "Pillow>=10.0,<12.0",
+    "slowapi>=0.1.9,<1.0",
+    "prometheus-fastapi-instrumentator>=7.0,<8.0",
 ]
 
 [project.optional-dependencies]
@@ -43,7 +44,7 @@ packages = ["src/pdf_epub"]
 # ---------------------------------------------------------------------------
 [tool.ruff]
 line-length = 88
-target-version = "py312"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "B", "C4", "UP", "SIM", "TCH"]
@@ -60,7 +61,7 @@ indent-style = "space"
 # Mypy
 # ---------------------------------------------------------------------------
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.14"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
@@ -90,6 +91,18 @@ addopts = "-v --tb=short"
 [tool.coverage.run]
 source = ["src"]
 branch = true
+omit = [
+    # Require system binaries (Tesseract, Poppler) — not available in CI without them.
+    "*/infrastructure/extractors/tesseract_ocr.py",
+    "*/infrastructure/renderers/poppler_renderer.py",
+    # The full pdfplumber extractor needs real PDFs; covered by integration tests only.
+    "*/infrastructure/extractors/pdfplumber_extractor.py",
+    # ebooklib builder needs real documents; covered by integration tests only.
+    "*/infrastructure/builders/ebooklib_builder.py",
+]
 
 [tool.coverage.report]
 show_missing = true
+# Baseline measured 2026-05-29 with 55 unit + integration tests.
+# Omits infrastructure layers that require external binaries / real files.
+fail_under = 75
