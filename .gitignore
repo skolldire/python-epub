@@ -1,0 +1,32 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build / distribution
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+.eggs/
+
+# Tools
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime uploads/outputs
+/tmp/

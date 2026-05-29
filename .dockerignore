@@ -1,0 +1,35 @@
+# Version control
+.git/
+.gitignore
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Development tools
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs
+.idea/
+.vscode/
+
+# Runtime
+/tmp/
+
+# Docs and config not needed at runtime
+.env
+*.md
+!README.md
+tests/
+
+# Claude
+.claude/

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Job {{ job_id[:8] }} — bookforge{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+
+  <!-- Heading -->
+  <div class="text-center mb-8">
+    <h1 class="text-2xl font-bold
+               bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+      Conversion Job
+    </h1>
+    <p class="mt-1.5 text-[11px] font-mono text-white/25 tracking-widest">{{ job_id }}</p>
+  </div>
+
+  <!-- Card -->
+  <div class="glass-card rounded-2xl p-7 shadow-2xl shadow-black/40">
+
+    <div class="flex flex-col items-center gap-6">
+
+      <!-- Spinner -->
+      <div id="spinner" class="hidden">
+        <div class="w-14 h-14 rounded-full border-[3px] border-violet-500/20
+                    border-t-violet-400 animate-spin"></div>
+      </div>
+
+      <!-- Status badge -->
+      <span id="status-badge"
+            class="px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-widest">
+      </span>
+
+      <!-- Progress bar -->
+      <div id="progress-wrap" class="hidden w-full">
+        <div class="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+          <div id="progress-bar"
+               class="h-full rounded-full shimmer progress-bar
+                      bg-gradient-to-r from-violet-400 to-fuchsia-400"
+               style="width:10%"></div>
+        </div>
+      </div>
+
+      <!-- Filename -->
+      <p id="filename" class="text-white/50 text-sm text-center"></p>
+
+      <!-- Download -->
+      <a id="download-btn" href="#"
+         class="hidden items-center gap-2 px-7 py-3 rounded-xl font-bold text-sm text-white
+                bg-gradient-to-r from-emerald-500 to-teal-500
+                hover:from-emerald-400 hover:to-teal-400
+                shadow-lg shadow-emerald-900/40
+                transition-all active:scale-[0.98]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20"
+             fill="currentColor">
+          <path fill-rule="evenodd"
+                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0
+                   011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414
+                   1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                clip-rule="evenodd"/>
+        </svg>
+        Download EPUB
+      </a>
+
+      <!-- Error -->
+      <div id="error-box"
+           class="hidden w-full flex items-center gap-2 px-4 py-3
+                  bg-red-500/[0.08] border border-red-500/20 rounded-xl
+                  text-sm text-red-300 text-center">
+      </div>
+    </div>
+
+    <!-- Back link -->
+    <div class="mt-8 pt-5 border-t border-white/[0.06] text-center">
+      <a href="/"
+         class="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors">
+        ← Convert another PDF
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+const JOB_ID  = {{ job_id | tojson }};
+const POLL_MS = 2000;
+
+const badge       = document.getElementById('status-badge');
+const spinner     = document.getElementById('spinner');
+const filenameEl  = document.getElementById('filename');
+const progressWrap= document.getElementById('progress-wrap');
+const progressBar = document.getElementById('progress-bar');
+const downloadBtn = document.getElementById('download-btn');
+const errorBox    = document.getElementById('error-box');
+
+const BADGE = {
+  pending:    'bg-amber-500/20 text-amber-300',
+  processing: 'bg-blue-500/20  text-blue-300',
+  completed:  'bg-emerald-500/20 text-emerald-300',
+  failed:     'bg-red-500/20   text-red-300',
+};
+
+let ticks = 0, pollTimer = null;
+
+function render(job) {
+  badge.textContent = job.status;
+  badge.className   = `px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-widest
+                       ${BADGE[job.status] || 'bg-white/10 text-white/50'}`;
+  filenameEl.textContent = job.original_filename || '';
+
+  const active = job.status === 'pending' || job.status === 'processing';
+  spinner.classList.toggle('hidden', !active);
+  progressWrap.classList.toggle('hidden', !active);
+
+  if (active) {
+    ticks++;
+    progressBar.style.width = Math.min(90, 10 + ticks * 4) + '%';
+  }
+
+  if (job.status === 'completed' && job.epub_url) {
+    progressBar.style.width = '100%';
+    progressBar.classList.remove('shimmer');
+    setTimeout(() => progressWrap.classList.add('hidden'), 900);
+    downloadBtn.href = job.epub_url;
+    downloadBtn.classList.remove('hidden');
+    downloadBtn.classList.add('flex');
+  }
+
+  if (job.status === 'failed') {
+    errorBox.textContent = job.error || 'Conversion failed. Please try again.';
+    errorBox.classList.remove('hidden');
+  }
+
+  if (job.status === 'completed' || job.status === 'failed') {
+    clearInterval(pollTimer);
+  }
+}
+
+async function poll() {
+  try {
+    const r = await fetch(`/api/v1/jobs/${JOB_ID}`);
+    if (r.ok) render(await r.json());
+  } catch (_) {}
+}
+
+poll();
+pollTimer = setInterval(poll, POLL_MS);
+</script>
+{% endblock %}
