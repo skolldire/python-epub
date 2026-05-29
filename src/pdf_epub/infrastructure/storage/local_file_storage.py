@@ -11,9 +11,9 @@ class LocalFileStorage(FileStoragePort):
         upload_dir.mkdir(parents=True, exist_ok=True)
         epub_dir.mkdir(parents=True, exist_ok=True)
 
-    def save_upload(self, filename: str, content: bytes) -> Path:
+    def save_upload(self, job_id: str, filename: str, content: bytes) -> Path:
         safe_name = Path(filename).name  # strip any directory traversal
-        dest = self._upload_dir / safe_name
+        dest = self._upload_dir / f"{job_id}_{safe_name}"
         dest.write_bytes(content)
         return dest
 

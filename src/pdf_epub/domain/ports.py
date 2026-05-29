@@ -60,8 +60,8 @@ class FileStoragePort(ABC):
     """Manages uploaded PDFs and generated EPUB files on disk."""
 
     @abstractmethod
-    def save_upload(self, filename: str, content: bytes) -> Path:
-        """Persists the uploaded PDF bytes and returns its path."""
+    def save_upload(self, job_id: str, filename: str, content: bytes) -> Path:
+        """Persists the uploaded PDF bytes under {job_id}_{filename} and returns its path."""
 
     @abstractmethod
     def epub_output_path(self, job_id: str) -> Path:

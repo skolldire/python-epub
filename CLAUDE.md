@@ -10,7 +10,6 @@ FastAPI service for working with EPUB files. MIT licensed. Python 3.14.
 
 - Python 3.14 via a local `.venv` at the project root
 - Activate: `source .venv/bin/activate`
-- IDE: JetBrains PyCharm (`.idea/` present)
 
 ## Architecture — Lightweight Hexagonal (Ports & Adapters)
 
@@ -19,7 +18,7 @@ Three concentric layers. The domain never imports from outer layers.
 ```
 src/<package>/
 ├── domain/               # Pure Python — no framework dependencies
-│   ├── entities.py       # Business objects (dataclasses / Pydantic BaseModel)
+│   ├── entities.py       # Business objects (dataclasses only)
 │   ├── value_objects.py
 │   ├── exceptions.py     # Domain-level errors
 │   └── ports.py          # Abstract repository/service interfaces (ABC or Protocol)
@@ -67,6 +66,37 @@ async def create_epub(
     return EpubResponse.from_domain(result)
 ```
 
+## Domain Rules
+
+The domain layer must never import from:
+
+- FastAPI or Starlette
+- Pydantic or pydantic-settings
+- SQLAlchemy or any ORM
+- Storage SDKs (S3, GCS, Azure Blob, etc.)
+- Logging frameworks (structlog, loguru)
+- HTTP clients (httpx, requests, aiohttp)
+- Cloud or third-party SDKs
+
+Domain entities use plain Python `@dataclass`. Business rules live here — no framework knowledge allowed.
+
+## Architecture Rules
+
+Prefer:
+- simple functions over classes where state isn't needed
+- composition over inheritance
+- explicit constructor injection over service locators
+- pure business logic in the domain, I/O at the edges
+- small, focused interfaces (ports with 1–3 methods)
+- high cohesion within a layer, low coupling between layers
+
+Avoid:
+- framework leakage into the domain or application layers
+- unnecessary abstractions before the need is proven
+- generic base classes that exist only to share code
+- deeply nested inheritance hierarchies
+- overengineering for hypothetical future requirements
+
 ## Code Conventions
 
 - **Language**: all comments, docstrings, variable names, commit messages, and README content must be written in **English**.
@@ -74,15 +104,35 @@ async def create_epub(
 - Docstrings only on public API surface (modules, classes, public functions). One-line max unless the behavior is genuinely non-obvious.
 - Type annotations on every public function signature.
 
+## Testing Rules
+
+- Business rules must have unit tests.
+- Domain tests must not require infrastructure (no DB, no HTTP, no filesystem).
+- Mock only external dependencies (ports), never the domain itself.
+- Tests must be deterministic — no random data, no time-dependent assertions without control.
+- One test file per module; name it `test_<module>.py`.
+
+## Dependency Rules
+
+Prefer:
+- the standard library
+- lightweight, single-purpose packages
+- well-maintained libraries with clear release history
+
+Avoid:
+- pulling in a framework when a small library or stdlib suffices
+- two packages that solve the same problem
+- packages with no recent activity or a single maintainer with no bus-factor mitigation
+
 ## README Policy
 
-**Update `README.md` after every meaningful change.** This is not optional.
-
-What to document after each change:
-- New endpoints: method, path, request/response shape, example `curl`.
-- New configuration variables: name, type, default, purpose.
+Update `README.md` whenever public-facing behavior changes:
+- New or changed endpoints: method, path, request/response shape, example `curl`.
+- New or changed configuration variables: name, type, default, purpose.
 - New domain concepts: what they represent, why they exist.
-- Changed behavior: what changed and the migration path if any.
-- New dependencies: what they do, why they were added.
+- Behavior changes that require a migration path.
+- New runtime dependencies: what they do, why they were added.
+
+Internal refactors, performance improvements, and bug fixes that do not change observable behavior do not require a README update.
 
 Format: clear sections, fenced code blocks for examples, no filler text.

@@ -12,6 +12,7 @@ from pdf_epub.domain.entities import (
 from pdf_epub.domain.exceptions import BuildError
 from pdf_epub.domain.ports import EpubBuilderPort
 from pdf_epub.log import get_logger
+from pdf_epub.utils import escape_html as _escape
 
 log = get_logger(__name__)
 
@@ -256,10 +257,3 @@ class EbooklibBuilder(EpubBuilderPort):
         return f"<table><thead><tr>{th_cells}</tr></thead><tbody>{tbody_rows}</tbody></table>"
 
 
-def _escape(text: str) -> str:
-    return (
-        text.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )

@@ -23,6 +23,7 @@ from pdf_epub.domain.exceptions import (
 from pdf_epub.domain.ports import JobRepositoryPort
 from pdf_epub.domain.value_objects import JobStatus
 from pdf_epub.exceptions import AppError, NotFoundError, UnprocessableError
+from pdf_epub.infrastructure.api.limiter import limiter
 from pdf_epub.infrastructure.api.schemas.responses import JobResponse
 from pdf_epub.dependencies import get_job_repo
 
@@ -61,7 +62,8 @@ def _to_response(job: ConversionJob, request: Request) -> JobResponse:
 
 
 @router.post("/peek", include_in_schema=False)
-async def peek_pdf(file: UploadFile = File(...)) -> JSONResponse:
+@limiter.limit("30/minute")
+async def peek_pdf(request: Request, file: UploadFile = File(...)) -> JSONResponse:
     """Fast metadata read — does not store the file."""
     content = await file.read()
     title, author, page_count = "", "", 0
@@ -79,6 +81,7 @@ async def peek_pdf(file: UploadFile = File(...)) -> JSONResponse:
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=JobResponse)
+@limiter.limit("10/minute")
 async def create_job(
     request: Request,
     background_tasks: BackgroundTasks,

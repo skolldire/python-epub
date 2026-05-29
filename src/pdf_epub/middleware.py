@@ -1,3 +1,4 @@
+import re
 import time
 import uuid
 
@@ -6,6 +7,11 @@ from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 log = structlog.get_logger(__name__)
+
+_UUID_RE = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+    re.IGNORECASE,
+)
 
 _SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
@@ -31,7 +37,8 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
     and adds security headers to all responses."""
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
+        raw_id = request.headers.get("X-Request-ID", "")
+        request_id = raw_id if _UUID_RE.match(raw_id) else str(uuid.uuid4())
 
         structlog.contextvars.clear_contextvars()
         structlog.contextvars.bind_contextvars(

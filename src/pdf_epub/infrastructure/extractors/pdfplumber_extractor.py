@@ -22,6 +22,7 @@ from pdf_epub.domain.exceptions import ExtractionError
 from pdf_epub.domain.ports import PdfExtractorPort
 from pdf_epub.domain.value_objects import BoundingBox
 from pdf_epub.log import get_logger
+from pdf_epub.utils import escape_html as _escape
 
 log = get_logger(__name__)
 
@@ -175,15 +176,6 @@ def _is_cid_garbage(text: str) -> bool:
     clean = _CID_PATTERN.sub("", text)
     total = cid_count + len(clean.replace(" ", ""))
     return cid_count / max(total, 1) > 0.3
-
-
-def _escape(text: str) -> str:
-    return (
-        text.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )
 
 
 class PdfPlumberExtractor(PdfExtractorPort):

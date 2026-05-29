@@ -5,8 +5,8 @@ from pdf_epub.domain.exceptions import ExtractionError
 from pdf_epub.domain.ports import FileStoragePort, JobRepositoryPort
 
 _ALLOWED_IMAGE_SIGNATURES = (
-    b"\xff\xd8",        # JPEG
-    b"\x89PNG",         # PNG
+    b"\xff\xd8",   # JPEG
+    b"\x89PNG",    # PNG
 )
 
 
@@ -45,10 +45,13 @@ class UploadPdf:
             if not any(custom_cover.startswith(sig) for sig in _ALLOWED_IMAGE_SIGNATURES):
                 raise ExtractionError("Cover must be a JPEG or PNG image")
 
-        pdf_path = self._storage.save_upload(filename, content)
+        # Generate the job ID first so the upload path is unique per job,
+        # preventing filename collisions between concurrent uploads.
+        job_id = str(uuid.uuid4())
+        pdf_path = self._storage.save_upload(job_id, filename, content)
 
         job = ConversionJob(
-            id=str(uuid.uuid4()),
+            id=job_id,
             original_filename=filename,
             pdf_path=pdf_path,
             custom_title=custom_title.strip() if custom_title else None,
