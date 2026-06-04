@@ -37,6 +37,7 @@ figure img          { max-width: 90%; height: auto; display: inline-block; }
 figcaption          { font-size: 0.85em; color: #555; margin-top: 0.4em; }
 sup { vertical-align: super; font-size: 0.75em; }
 sub { vertical-align: sub;   font-size: 0.75em; }
+p.boxed { border: 1px solid #999; border-radius: 3px; padding: 0.5em 0.8em; margin: 1em 0; background: #f8f8f8; }
 """
 
 # Font-size tiers for heading-level detection (relative to median).
@@ -110,6 +111,8 @@ class EbooklibBuilder(EpubBuilderPort):
                                 )
                             else:
                                 html_parts.append(f"<{tag}>{content}</{tag}>")
+                        elif block.is_boxed:
+                            html_parts.append(f'<p class="boxed">{content}</p>')
                         else:
                             align_class = block.alignment if block.alignment in (
                                 "left", "center", "right", "justify"

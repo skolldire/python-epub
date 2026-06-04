@@ -1,3 +1,4 @@
+import gc
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -44,6 +45,8 @@ class ConvertPdf:
         self._default_language = default_language
 
     def execute(self, job_id: str) -> None:
+        gc.collect()   # free any large objects left by the previous conversion
+
         job = self._repo.get(job_id)
         if job is None:
             raise ExtractionError(f"Job {job_id} not found")
@@ -126,6 +129,7 @@ class ConvertPdf:
             # while conversion was in progress.
             if self._repo.get(job_id) is not None:
                 self._repo.save(job)
+            gc.collect()   # release all extraction/build objects before next job
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 

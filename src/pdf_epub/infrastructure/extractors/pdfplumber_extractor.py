@@ -35,6 +35,12 @@ _SCAN_CHAR_THRESHOLD = 50
 # exported from Notes / Keynote) contain thousands of tiny graphic elements.
 # Cropping each one individually would hang; skip image extraction for such pages.
 _MAX_IMAGES_PER_PAGE = 50
+# Decorative images (dashed-border tiles, thin rules) have a height of ~1–2 pt.
+# Real content images are always at least several dozen points in each dimension.
+# Skipping images below this minimum height prevents dozens of 1-pt tile images
+# from becoming <figure> elements that each add 2.4em of vertical margin.
+_MIN_IMAGE_HEIGHT_PT = 5
+_MIN_IMAGE_WIDTH_PT = 5
 
 # ── Heading detection ───────────────────────────────────────────────────────
 # A line is a heading when its font size exceeds median × this factor.
@@ -166,6 +172,15 @@ def _is_sentence_end(text: str) -> bool:
             return False
         return True
     return False
+
+
+def _word_in_bbox(
+    word: dict, bboxes: list[tuple[float, float, float, float]]
+) -> bool:
+    """Returns True when the word's center falls within any of the given bounding boxes."""
+    cx = (float(word.get("x0", 0)) + float(word.get("x1", 0))) / 2
+    cy = (float(word.get("top", 0)) + float(word.get("bottom", 0))) / 2
+    return any(x0 <= cx <= x1 and y0 <= cy <= y1 for x0, y0, x1, y1 in bboxes)
 
 
 def _is_cid_garbage(text: str) -> bool:
@@ -396,6 +411,16 @@ class PdfPlumberExtractor(PdfExtractorPort):
         page_imgs = page.images or []
         if len(page_imgs) <= _MAX_IMAGES_PER_PAGE:
             for img in page_imgs:
+                img_w = float(img["x1"]) - float(img["x0"])
+                img_h = float(img["bottom"]) - float(img["top"])
+                if img_w < _MIN_IMAGE_WIDTH_PT or img_h < _MIN_IMAGE_HEIGHT_PT:
+                    log.debug(
+                        "image_skipped_too_small",
+                        page=page.page_number,
+                        width=round(img_w, 1),
+                        height=round(img_h, 1),
+                    )
+                    continue
                 try:
                     bbox = BoundingBox(
                         x0=float(img["x0"]),
@@ -424,18 +449,54 @@ class PdfPlumberExtractor(PdfExtractorPort):
                 reason="exceeds _MAX_IMAGES_PER_PAGE",
             )
 
-        # -- Tables (use y=0 as fallback since pdfplumber doesn't expose table bbox reliably) --
-        for table in page.extract_tables() or []:
-            if not table:
+        # -- Tables --
+        # find_tables() gives us actual bounding boxes so every table/box is
+        # placed at the correct vertical position in reading order.
+        table_bboxes: list[tuple[float, float, float, float]] = []
+        for table in page.find_tables() or []:
+            extracted = table.extract()
+            if not extracted:
                 continue
-            rows: list[list[str | None]] = [[cell for cell in row] for row in table]
-            bbox = BoundingBox(0, 0, page_width, page_height)
-            items.append((0.0, TableBlock(page_number=page.page_number, bbox=bbox, rows=rows)))
+            t_x0, t_top, t_x1, t_bottom = table.bbox
+            table_bboxes.append((t_x0, t_top, t_x1, t_bottom))
+
+            rows: list[list[str | None]] = [[cell for cell in row] for row in extracted]
+            max_cols = max((len(row) for row in rows), default=0)
+
+            if max_cols <= 1:
+                # Single-column structure is a visual text box, not a data table.
+                text = " ".join(
+                    cell.strip() for row in rows for cell in row if cell and cell.strip()
+                )
+                if text:
+                    items.append((
+                        t_top,
+                        TextBlock(
+                            page_number=page.page_number,
+                            bbox=BoundingBox(t_x0, t_top, t_x1, t_bottom),
+                            text=_normalize_text(text),
+                            font_size=median_size,
+                            is_boxed=True,
+                        ),
+                    ))
+            else:
+                items.append((
+                    t_top,
+                    TableBlock(
+                        page_number=page.page_number,
+                        bbox=BoundingBox(t_x0, t_top, t_x1, t_bottom),
+                        rows=rows,
+                    ),
+                ))
 
         # -- Text --
         words = page.extract_words(
             extra_attrs=["size", "fontname", "top", "bottom"]
         ) or []
+        # Words that fall inside a detected table/box area were already captured
+        # above; exclude them here to prevent double-rendering.
+        if table_bboxes:
+            words = [w for w in words if not _word_in_bbox(w, table_bboxes)]
         left_margin, right_margin = self._compute_margins(words, page_width)
         lines = self._group_words_into_lines(words)
         paragraphs = self._merge_lines_into_paragraphs(lines, heading_threshold)

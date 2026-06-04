@@ -18,11 +18,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2g        # OCR + pdfplumber can be RAM-hungry on large PDFs
-          cpus: "1.5"
+          memory: 4g
+          cpus: "2.0"
         reservations:
-          memory: 256m
-          cpus: "0.25"
+          memory: 512m
+          cpus: "0.5"
     healthcheck:
       test: ["CMD", "python", "-c",
              "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]

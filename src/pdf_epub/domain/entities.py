@@ -20,6 +20,7 @@ class TextBlock(ContentBlock):
     is_heading: bool = False
     alignment: str = "left"     # "left" | "center" | "right" | "justify"
     inline_html: str = ""       # rich inline HTML preserving bold/italic/sup/sub/size
+    is_boxed: bool = False       # True when text sits inside a visual callout/box
 
 
 @dataclass
